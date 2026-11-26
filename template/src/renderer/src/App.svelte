@@ -15,7 +15,14 @@
   import { toast } from 'svelte-sonner';
   import { COMMANDS, type CommandId } from '../../shared/commands';
   import { APP_NAME } from '../../shared/brand';
-  import { DEFAULT_SETTINGS, type AppSettings, type Appearance } from '../../shared/settings';
+  import { tabIndexForShortcut } from '../../shared/tabs';
+  import {
+    DEFAULT_SETTINGS,
+    MAX_PINNED_TABS,
+    type AppSettings,
+    type Appearance,
+    type PinnedTab,
+  } from '../../shared/settings';
   import Titlebar from '$lib/components/shell/Titlebar.svelte';
   import CommandLauncher from '$lib/components/shell/CommandLauncher.svelte';
   import ActionIcon from '$lib/components/shell/ActionIcon.svelte';
@@ -23,30 +30,23 @@
   import { Toaster } from '$lib/components/ui/sonner/index.js';
   import { Badge } from '$lib/components/ui/badge/index.js';
 
-  type Tab = {
-    id: string;
-    title: string;
-    kind: 'workspace' | 'settings' | 'about';
-    folder?: string;
-  };
+  type Tab = PinnedTab & { pinned: boolean };
 
-  let tabs = $state<Tab[]>([{ id: 'home', title: 'Workspace', kind: 'workspace' }]);
+  let tabs = $state<Tab[]>([{ id: 'home', title: 'Workspace', kind: 'workspace', pinned: false }]);
   let activeTabId = $state('home');
   let settings = $state<AppSettings>({
     ...DEFAULT_SETTINGS,
     pinnedCommands: [...DEFAULT_SETTINGS.pinnedCommands],
   });
   let paletteOpen = $state(false);
-  let systemDark = $state(true);
-
   const activeTab = $derived(tabs.find((tab) => tab.id === activeTabId) ?? tabs[0]);
-  const dark = $derived(
-    settings.appearance === 'dark' || (settings.appearance === 'system' && systemDark),
-  );
+  const dark = $derived(settings.appearance === 'dark');
 
   $effect(() => {
     document.documentElement.classList.toggle('dark', dark);
+    document.documentElement.classList.toggle('sepia', settings.appearance === 'sepia');
     document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+    window.desktop.setTitlebarTheme(settings.appearance);
   });
 
   function createTab(kind: Tab['kind'] = 'workspace', folder?: string): void {
@@ -58,28 +58,59 @@
           : folder
             ? folder.split(/[\\/]/).pop() || 'Workspace'
             : 'Workspace';
-    const tab = { id: crypto.randomUUID(), title, kind, ...(folder ? { folder } : {}) };
+    const tab = {
+      id: crypto.randomUUID(),
+      title,
+      kind,
+      pinned: false,
+      ...(folder ? { folder } : {}),
+    };
     tabs = [...tabs, tab];
     activeTabId = tab.id;
   }
 
   function closeTab(id: string): void {
     const position = tabs.findIndex((tab) => tab.id === id);
+    const wasPinned = tabs[position]?.pinned;
     tabs = tabs.filter((tab) => tab.id !== id);
     if (!tabs.length) {
       createTab();
     } else if (activeTabId === id) {
       activeTabId = tabs[Math.min(position, tabs.length - 1)].id;
     }
+    if (wasPinned) savePinnedTabs();
+  }
+
+  function savePinnedTabs(): void {
+    save({
+      pinnedTabs: tabs
+        .filter((tab) => tab.pinned)
+        .map(({ id, title, kind, folder }) => ({ id, title, kind, ...(folder ? { folder } : {}) })),
+    });
+  }
+
+  function toggleTabPin(id: string): void {
+    const tab = tabs.find((item) => item.id === id);
+    if (!tab) return;
+    if (!tab.pinned && tabs.filter((item) => item.pinned).length >= MAX_PINNED_TABS) {
+      toast.error(`You can pin up to ${MAX_PINNED_TABS} tabs.`);
+      return;
+    }
+    tabs = tabs.map((item) => (item.id === id ? { ...item, pinned: !item.pinned } : item));
+    tabs = [...tabs.filter((item) => item.pinned), ...tabs.filter((item) => !item.pinned)];
+    savePinnedTabs();
   }
 
   function reorderTab(source: string, target: string): void {
     const from = tabs.findIndex((tab) => tab.id === source);
     const to = tabs.findIndex((tab) => tab.id === target);
     if (from < 0 || to < 0 || from === to) return;
+    if (tabs[from].pinned !== tabs[to].pinned) return;
+    const wasPinned = tabs[from].pinned;
     const ordered = [...tabs];
     ordered.splice(to, 0, ...ordered.splice(from, 1));
     tabs = ordered;
+    if (wasPinned) savePinnedTabs();
   }
 
   function save(change: Partial<AppSettings>): void {
@@ -121,7 +152,14 @@
         save({ sidebarCollapsed: !settings.sidebarCollapsed });
         break;
       case 'theme.toggle':
-        save({ appearance: dark ? 'light' : 'dark' });
+        save({
+          appearance: (
+            { dark: 'light', light: 'sepia', sepia: 'dark' } satisfies Record<
+              Appearance,
+              Appearance
+            >
+          )[settings.appearance],
+        });
         break;
       case 'folder.open':
         void window.desktop.selectFolder().then((folder) => {
@@ -139,6 +177,15 @@
   function handleKeydown(event: KeyboardEvent): void {
     if (!(event.metaKey || event.ctrlKey) || event.altKey || event.shiftKey) return;
     const key = event.key.toLowerCase();
+    const tabIndex = tabIndexForShortcut(key, tabs.length);
+    if (tabIndex !== null) {
+      const target = tabs[tabIndex];
+      if (target) {
+        event.preventDefault();
+        activeTabId = target.id;
+      }
+      return;
+    }
     const id = (
       {
         k: 'palette.open',
@@ -156,12 +203,6 @@
   }
 
   onMount(() => {
-    const media = matchMedia('(prefers-color-scheme: dark)');
-    const syncSystem = (): void => {
-      systemDark = media.matches;
-    };
-    syncSystem();
-    media.addEventListener('change', syncSystem);
     window.addEventListener('keydown', handleKeydown);
     const unsubscribe = window.desktop.onCommand(run);
     const unsubscribeWorkspace = window.desktop.onWorkspace((path) => createTab('workspace', path));
@@ -169,11 +210,12 @@
       .getSettings()
       .then((saved) => {
         settings = saved;
+        const pinned = saved.pinnedTabs.map((tab) => ({ ...tab, pinned: true }));
+        tabs = [...pinned, ...tabs.filter((tab) => !pinned.some((item) => item.id === tab.id))];
       })
       .catch((error) => toast.error(`Could not load settings: ${error}`));
     return () => {
       window.removeEventListener('keydown', handleKeydown);
-      media.removeEventListener('change', syncSystem);
       unsubscribe();
       unsubscribeWorkspace();
     };
@@ -190,6 +232,7 @@
     }}
     onClose={closeTab}
     onReorder={reorderTab}
+    onTogglePin={toggleTabPin}
     onRun={run}
     onUnpin={togglePin}
     onSearch={() => {
@@ -319,16 +362,23 @@
         </div>
         <section class="settings-section">
           <h2>Appearance</h2>
-          <p>Choose how the application follows your desktop's theme.</p>
+          <p>
+            Dark by default, with a clean light theme and a warm Solarized-inspired sepia theme.
+          </p>
           <div class="setting-options">
-            {#each ['dark', 'light', 'system'] as appearance (appearance)}<Button
+            {#each ['dark', 'light', 'sepia'] as appearance (appearance)}<Button
                 variant={settings.appearance === appearance ? 'default' : 'outline'}
                 size="sm"
                 onclick={() => save({ appearance: appearance as Appearance })}
               >
-                {appearance === 'system' ? 'System' : appearance === 'dark' ? 'Dark' : 'Light'}
+                {appearance === 'sepia' ? 'Sepia' : appearance === 'dark' ? 'Dark' : 'Light'}
               </Button>{/each}
           </div>
+        </section>
+        <section class="settings-section">
+          <h2>Pinned tabs</h2>
+          <p>Right-click a tab to pin it. Up to three pinned tabs are restored on launch.</p>
+          <p>Use Ctrl/Cmd+1 through 8 for numbered tabs and Ctrl/Cmd+9 for the last tab.</p>
         </section>
         <section class="settings-section">
           <h2>Title-bar commands</h2>

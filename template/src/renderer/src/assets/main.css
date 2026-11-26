@@ -73,6 +73,35 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.sepia {
+  --background: #fdf6e3;
+  --foreground: #586e75;
+  --card: #fff9ec;
+  --card-foreground: #586e75;
+  --popover: #fff9ec;
+  --popover-foreground: #586e75;
+  --primary: #586e75;
+  --primary-foreground: #fff9ec;
+  --secondary: #eee8d5;
+  --secondary-foreground: #586e75;
+  --muted: #eee8d5;
+  --muted-foreground: #657b83;
+  --accent: #e8dec4;
+  --accent-foreground: #586e75;
+  --destructive: #dc322f;
+  --border: #d8cfb8;
+  --input: #d8cfb8;
+  --ring: #b58900;
+  --sidebar: #f4ebd8;
+  --sidebar-foreground: #586e75;
+  --sidebar-primary: #586e75;
+  --sidebar-primary-foreground: #fff9ec;
+  --sidebar-accent: #e8dec4;
+  --sidebar-accent-foreground: #586e75;
+  --sidebar-border: #d8cfb8;
+  --sidebar-ring: #b58900;
+}
+
 @theme inline {
   --font-sans: 'Inter Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -143,6 +172,15 @@
   --shell-tab-active: #0a0a0a;
   --shell-main: #101010;
   --shell-stroke: #292929;
+}
+
+.sepia {
+  --shell-title: #e9e1c9;
+  --shell-sidebar: #f4ebd8;
+  --shell-tab: #ece4d0;
+  --shell-tab-active: #fff9ec;
+  --shell-main: #fdf6e3;
+  --shell-stroke: #d8cfb8;
 }
 
 html,
@@ -226,6 +264,15 @@ button:focus-visible {
 .tab-container {
   flex: 0 0 145px;
   min-width: 100px;
+}
+.tab-container.pinned {
+  flex-basis: 44px;
+  min-width: 44px;
+}
+.title-tab.pinned .tab-label {
+  display: grid;
+  place-items: center;
+  padding: 0;
 }
 .title-tab {
   display: flex;
@@ -488,10 +535,31 @@ button:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.recent-folders { display: grid; gap: 4px; margin-top: 14px; }
-.recent-folders button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; text-align: left; border-radius: 4px; color: var(--muted-foreground); }
-.recent-folders button:hover { background: var(--accent); color: var(--foreground); }
-.recent-folders button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.recent-folders {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+}
+.recent-folders button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  border-radius: 4px;
+  color: var(--muted-foreground);
+}
+.recent-folders button:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+.recent-folders button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
 .setting-options {
   display: flex;
   gap: 9px;

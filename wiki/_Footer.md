@@ -1,0 +1,1 @@
+Documentation source: [copier-electron-svelte](https://github.com/RuchirChawdhry/copier-electron-svelte/tree/main/wiki). Read the [Starlight site](https://ruchirchawdhry.github.io/copier-electron-svelte/) or browse the Wiki.

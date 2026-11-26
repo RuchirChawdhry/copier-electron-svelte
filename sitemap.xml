@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/architecture/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/commands-and-jump-lists/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/copier-reference/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/getting-started/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/quality-and-ci/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/themes-and-styling/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/troubleshooting/</loc>
+  </url>
+  <url>
+    <loc>https://ruchirchawdhry.github.io/copier-electron-svelte/workspace-and-tabs/</loc>
+  </url>
+</urlset>

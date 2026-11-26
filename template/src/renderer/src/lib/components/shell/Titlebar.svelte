@@ -1,6 +1,17 @@
 <script lang="ts">
-  import { PinOff, Plus, Search, X } from '@lucide/svelte';
+  import {
+    FolderOpen,
+    Info,
+    LayoutDashboard,
+    Pin,
+    PinOff,
+    Plus,
+    Search,
+    Settings,
+    X,
+  } from '@lucide/svelte';
   import { COMMANDS, type CommandId } from '../../../../../shared/commands';
+  import { MAX_PINNED_TABS } from '../../../../../shared/settings';
   import { Button } from '$lib/components/ui/button/index.js';
   import * as ContextMenu from '$lib/components/ui/context-menu/index.js';
   import * as Tooltip from '$lib/components/ui/tooltip/index.js';
@@ -10,6 +21,8 @@
     id: string;
     title: string;
     kind: 'workspace' | 'settings' | 'about';
+    pinned: boolean;
+    folder?: string;
   }
 
   let {
@@ -19,6 +32,7 @@
     onSelect,
     onClose,
     onReorder,
+    onTogglePin,
     onRun,
     onUnpin,
     onSearch,
@@ -30,6 +44,7 @@
     onSelect: (id: string) => void;
     onClose: (id: string) => void;
     onReorder: (source: string, target: string) => void;
+    onTogglePin: (id: string) => void;
     onRun: (id: CommandId) => void;
     onUnpin: (id: CommandId) => void;
     onSearch: () => void;
@@ -41,6 +56,7 @@
   const pinned = $derived(
     pinnedCommands.flatMap((id) => COMMANDS.filter((command) => command.id === id)),
   );
+  const pinnedTabCount = $derived(tabs.filter((tab) => tab.pinned).length);
 </script>
 
 <header class:mac class="titlebar" aria-label="Application title bar">
@@ -48,9 +64,10 @@
   <div class="tabstrip" role="tablist" aria-label="Open tabs">
     {#each tabs as tab (tab.id)}
       <ContextMenu.Root>
-        <ContextMenu.Trigger class="tab-container">
+        <ContextMenu.Trigger class={tab.pinned ? 'tab-container pinned' : 'tab-container'}>
           <div
             class:active={tab.id === activeTabId}
+            class:pinned={tab.pinned}
             class="title-tab"
             role="group"
             aria-label={`${tab.title} tab controls`}
@@ -73,20 +90,42 @@
               class="tab-label"
               role="tab"
               aria-selected={tab.id === activeTabId}
+              aria-label={tab.title}
+              title={tab.title}
               onclick={() => onSelect(tab.id)}
             >
-              {tab.title}
+              {#if tab.pinned}
+                {#if tab.kind === 'settings'}
+                  <Settings size={15} />
+                {:else if tab.kind === 'about'}
+                  <Info size={15} />
+                {:else if tab.folder}
+                  <FolderOpen size={15} />
+                {:else}
+                  <LayoutDashboard size={15} />
+                {/if}
+              {:else}
+                {tab.title}
+              {/if}
             </button>
-            <button
-              class="tab-close"
-              aria-label={`Close ${tab.title}`}
-              onclick={() => onClose(tab.id)}
-            >
-              <X size={12} />
-            </button>
+            {#if !tab.pinned}
+              <button
+                class="tab-close"
+                aria-label={`Close ${tab.title}`}
+                onclick={() => onClose(tab.id)}
+              >
+                <X size={12} />
+              </button>
+            {/if}
           </div>
         </ContextMenu.Trigger>
         <ContextMenu.Content class="rounded-none">
+          <ContextMenu.Item
+            disabled={!tab.pinned && pinnedTabCount >= MAX_PINNED_TABS}
+            onclick={() => onTogglePin(tab.id)}
+          >
+            {#if tab.pinned}<PinOff size={14} /> Unpin tab{:else}<Pin size={14} /> Pin tab{/if}
+          </ContextMenu.Item>
           <ContextMenu.Item onclick={() => onRun('tab.new')}>
             <Plus size={14} /> New tab
           </ContextMenu.Item>

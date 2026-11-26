@@ -129,6 +129,15 @@ if (hasLock) {
 
     ipcMain.handle('settings:get', () => getSettings());
     ipcMain.handle('settings:update', (_event, settings) => updateSettings(settings));
+    ipcMain.on('window:theme', (_event, theme: string) => {
+      if (process.platform === 'darwin' || !mainWindow) return;
+      const colors: Record<string, { color: string; symbolColor: string }> = {
+        dark: { color: '#171717', symbolColor: '#ededed' },
+        light: { color: '#eeeeee', symbolColor: '#202020' },
+        sepia: { color: '#e9e1c9', symbolColor: '#586e75' },
+      };
+      if (colors[theme]) mainWindow.setTitleBarOverlay({ ...colors[theme], height: 42 });
+    });
     ipcMain.handle('folder:select', async () => {
       const result = await dialog.showOpenDialog(mainWindow!, { properties: ['openDirectory'] });
       if (result.canceled) return null;

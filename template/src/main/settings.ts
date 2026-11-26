@@ -2,7 +2,13 @@ import { app } from 'electron';
 import { readFile, mkdir, writeFile, rename } from 'node:fs/promises';
 import { join } from 'node:path';
 import { isCommandId } from '../shared/commands';
-import { DEFAULT_SETTINGS, type AppSettings, type Appearance } from '../shared/settings';
+import {
+  DEFAULT_SETTINGS,
+  MAX_PINNED_TABS,
+  type AppSettings,
+  type Appearance,
+  type PinnedTab,
+} from '../shared/settings';
 
 let settings: AppSettings | undefined;
 
@@ -11,7 +17,7 @@ function settingsPath(): string {
 }
 
 function mergeSettings(value: Partial<AppSettings>): AppSettings {
-  const appearance: Appearance = ['dark', 'light', 'system'].includes(value.appearance ?? '')
+  const appearance: Appearance = ['dark', 'light', 'sepia'].includes(value.appearance ?? '')
     ? value.appearance!
     : DEFAULT_SETTINGS.appearance;
 
@@ -28,6 +34,17 @@ function mergeSettings(value: Partial<AppSettings>): AppSettings {
           ),
         ].slice(0, 8)
       : DEFAULT_SETTINGS.pinnedCommands,
+    pinnedTabs: Array.isArray(value.pinnedTabs)
+      ? value.pinnedTabs
+          .filter(
+            (tab): tab is PinnedTab =>
+              typeof tab?.id === 'string' &&
+              typeof tab.title === 'string' &&
+              ['workspace', 'settings', 'about'].includes(tab.kind) &&
+              (tab.folder === undefined || typeof tab.folder === 'string'),
+          )
+          .slice(0, MAX_PINNED_TABS)
+      : [],
     recentFolders: Array.isArray(value.recentFolders)
       ? [
           ...new Set(
@@ -49,6 +66,7 @@ export async function getSettings(): Promise<AppSettings> {
     settings = {
       ...DEFAULT_SETTINGS,
       pinnedCommands: [...DEFAULT_SETTINGS.pinnedCommands],
+      pinnedTabs: [],
       recentFolders: [],
     };
   }

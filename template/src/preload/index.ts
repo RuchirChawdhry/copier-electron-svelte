@@ -6,6 +6,7 @@ const desktop: DesktopApi = {
   platform: process.platform,
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (settings) => ipcRenderer.invoke('settings:update', settings),
+  setTitlebarTheme: (theme) => ipcRenderer.send('window:theme', theme),
   selectFolder: () => ipcRenderer.invoke('folder:select'),
   onCommand: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, id: CommandId): void => callback(id);

@@ -5,16 +5,26 @@ An opinionated Copier template for desktop applications with Electron, Svelte 5,
 Generated applications include:
 
 - Borumi-style title-bar tabs, including drag reordering and tab context menus.
+- Browser-style pinned tabs (up to 3) restored on launch; Ctrl/Cmd+1–9 tab switching.
 - A searchable command launcher in the title bar (`Ctrl+K` or `Cmd+K`).
 - Pinnable title-bar action buttons, with persisted preferences.
 - Windows Jump List tasks and recent workspaces.
-- A collapsible workspace sidebar, settings, dark/light/system themes and status bar.
+- A collapsible workspace sidebar, settings, dark/light/sepia themes and status bar.
 - A narrowly scoped, typed Electron preload API with context isolation and sandboxing.
 - TypeScript, ESLint, Oxlint, Prettier, Vitest, Playwright and Lefthook.
 - NSIS/MSI, AppImage/DEB and DMG/ZIP packaging scripts.
 - A generated GitHub Actions workflow calling `RuchirChawdhry/ci-workflows`.
 
 No system tray, hosted backend, account system or SQLite database is included.
+
+## Documentation
+
+- [Starlight documentation site](https://ruchirchawdhry.github.io/copier-electron-svelte/)
+- [GitHub Wiki](https://github.com/RuchirChawdhry/copier-electron-svelte/wiki)
+- [Editable documentation source](wiki/) — both destinations use the same pages.
+- [Repository sitemap](sitemap.xml) — kept in sync by `scripts/generate_sitemap.py`.
+
+Documentation deployment and wiki synchronization reuse the `wiki-pages.yml` and `wiki-publish.yml` reusable workflows from `RuchirChawdhry/ci-workflows`.
 
 ## Generate a project
 
