@@ -31,6 +31,6 @@ Electron Builder configurations include Windows NSIS and MSI, Linux AppImage and
 
 ## Documentation validation
 
-The Starlight workflow publishes HTML plus Markdown mirrors, `llms.txt`, `llms-full.txt` and an Astro sitemap. The repository's tracked `sitemap.xml` is generated from the same `wiki/` file names. When changing wiki pages, regenerate it with `python3 scripts/generate_sitemap.py` and commit both changes.
+The shared Starlight workflow publishes HTML plus Markdown mirrors, `llms.txt`, `llms-full.txt`, and Astro's `sitemap-index.xml` and sitemap pages. It also validates sitemap coverage. Edit the pages under `wiki/`; no per-repository sitemap script or tracked XML file is needed.
 
 See [Troubleshooting](Troubleshooting) when a check fails.

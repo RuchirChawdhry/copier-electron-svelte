@@ -5,14 +5,10 @@ on:
     branches: [main]
     paths:
       - 'wiki/**'
-      - 'sitemap.xml'
-      - 'scripts/generate_sitemap.py'
       - '.github/workflows/docs.yml'
   pull_request:
     paths:
       - 'wiki/**'
-      - 'sitemap.xml'
-      - 'scripts/generate_sitemap.py'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -22,18 +18,8 @@ permissions:
   id-token: write
 
 jobs:
-  sitemap:
-    name: Verify repository sitemap
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - run: python3 scripts/generate_sitemap.py --check
-
   site:
     name: Build and publish Starlight
-    needs: sitemap
     uses: RuchirChawdhry/ci-workflows/.github/workflows/wiki-pages.yml@main
     with:
       publish: ${{ github.event_name != 'pull_request' }}

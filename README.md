@@ -22,7 +22,7 @@ No system tray, hosted backend, account system or SQLite database is included.
 - [Starlight documentation site](https://ruchirchawdhry.github.io/copier-electron-svelte/)
 - [GitHub Wiki](https://github.com/RuchirChawdhry/copier-electron-svelte/wiki)
 - [Editable documentation source](wiki/) — both destinations use the same pages.
-- [Repository sitemap](sitemap.xml) — kept in sync by `scripts/generate_sitemap.py`.
+- [Site sitemap index](https://ruchirchawdhry.github.io/copier-electron-svelte/sitemap-index.xml) — generated and validated by the shared Starlight workflow.
 
 Documentation deployment and wiki synchronization reuse the `wiki-pages.yml` and `wiki-publish.yml` reusable workflows from `RuchirChawdhry/ci-workflows`.
 
