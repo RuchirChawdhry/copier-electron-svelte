@@ -46,3 +46,5 @@ pnpm build:mac
 Windows packaging includes NSIS and MSI. Linux includes AppImage and DEB. macOS includes DMG and ZIP. Native packaging and code signing should be tested on each target OS.
 
 The generated GitHub Actions workflow uses the shared Node CI workflow from `RuchirChawdhry/ci-workflows`. Running `pnpm test:e2e` requires a graphical session for Electron tests; the browser-only renderer test also requires an installed Playwright Chromium browser or `CHROMIUM_BIN`.
+
+For Windows UI captures, install [Microsoft WinApp CLI](https://github.com/microsoft/winappCli), build the app, and run `pnpm test:screenshots` in an interactive Windows session. The visual suite opens each built-in app screen and writes labeled PNG files to `screenshots/`.

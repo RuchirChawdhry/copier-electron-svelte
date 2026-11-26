@@ -18,6 +18,7 @@
     "typecheck": "pnpm typecheck:node && pnpm svelte-check",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:screenshots": "playwright test --config=playwright.screenshots.config.ts",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "build": "pnpm typecheck && electron-vite build",

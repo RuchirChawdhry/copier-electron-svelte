@@ -49,3 +49,5 @@ You can update generated projects when new template releases are tagged using `c
 ## Template verification
 
 Generate a temporary project with Copier, then run `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build` inside it. Desktop E2E tests require a graphical session and a Playwright browser installation.
+
+The repository's [Windows template tests](.github/workflows/windows-ci.yml) workflow automatically validates a freshly generated app on `windows-latest`, including Playwright desktop tests. The separate [Windows UI screenshots (WinApp)](.github/workflows/windows-screenshots.yml) workflow runs only when manually dispatched from GitHub Actions. It captures seven application views with Microsoft WinApp CLI and uploads PNG artifacts. See [Quality and CI](wiki/Quality-and-CI.md) for usage and Windows desktop-session requirements.
