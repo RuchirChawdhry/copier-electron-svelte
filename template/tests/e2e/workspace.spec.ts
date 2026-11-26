@@ -14,7 +14,7 @@ test('title-bar tabs and command launcher work', async () => {
     await page.waitForLoadState('load');
     await expect(page.getByRole('tab', { name: 'Workspace' })).toBeVisible();
 
-    await page.getByRole('button', { name: 'New tab' }).click();
+    await page.getByRole('button', { name: 'New tab', exact: true }).click();
     await expect(page.getByRole('tab', { name: 'Workspace' })).toHaveCount(2);
 
     await page.getByRole('button', { name: 'Search commands' }).click();

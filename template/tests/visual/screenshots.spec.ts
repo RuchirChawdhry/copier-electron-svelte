@@ -59,7 +59,7 @@ test('captures the workspace, command launcher, tabs, settings, themes, and abou
     await page.keyboard.press('Escape');
     await expect(page.getByPlaceholder('Search commands and actions…')).toBeHidden();
 
-    await page.getByRole('button', { name: 'New tab' }).click();
+    await page.getByRole('button', { name: 'New tab', exact: true }).click();
     await expect(page.getByRole('tab', { name: 'Workspace' })).toHaveCount(2);
     await page.getByRole('tab', { name: 'Workspace' }).first().click({ button: 'right' });
     await page.getByRole('menuitem', { name: 'Pin tab' }).click();
