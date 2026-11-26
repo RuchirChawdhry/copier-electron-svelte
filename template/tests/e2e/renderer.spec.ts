@@ -6,11 +6,16 @@ test('workspace tabs, command search and pinned actions work', async () => {
   const browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_BIN || undefined,
     headless: true,
-    args: ['--no-sandbox'],
+    // Chromium blocks file:// module imports unless local file access is enabled.
+    args: ['--no-sandbox', '--allow-file-access-from-files'],
   });
 
   try {
     const page = await browser.newPage();
+    page.on('pageerror', (error) => console.error('Renderer error:', error));
+    page.on('console', (message) => {
+      if (message.type() === 'error') console.error('Renderer console:', message.text());
+    });
     await page.addInitScript(() => {
       let settings = {
         appearance: 'dark' as const,
