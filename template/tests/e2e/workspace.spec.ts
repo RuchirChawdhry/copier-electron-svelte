@@ -12,15 +12,6 @@ test('title-bar tabs and command launcher work', async () => {
       if (message.type() === 'error') console.error('Electron console:', message.text());
     });
     await page.waitForLoadState('load');
-    console.log('Electron renderer URL:', page.url());
-    console.log('Electron renderer body:', (await page.locator('body').innerText()).slice(0, 300));
-    console.log(
-      'Electron window state:',
-      await application.evaluate(({ BrowserWindow }) => {
-        const window = BrowserWindow.getAllWindows()[0];
-        return { url: window.webContents.getURL(), loading: window.webContents.isLoading() };
-      }),
-    );
     await expect(page.getByRole('tab', { name: 'Workspace' })).toBeVisible();
 
     await page.getByRole('button', { name: 'New tab' }).click();

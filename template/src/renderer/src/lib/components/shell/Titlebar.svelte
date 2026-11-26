@@ -149,27 +149,29 @@
   <div class="title-spacer"></div>
 
   <div class="pinned-actions" aria-label="Pinned commands">
-    {#each pinned as command (command.id)}
-      <ContextMenu.Root>
-        <ContextMenu.Trigger class="no-drag">
-          <Tooltip.Root>
-            <Tooltip.Trigger
-              class="pinned-button"
-              onclick={() => onRun(command.id)}
-              aria-label={command.title}
-            >
-              <ActionIcon name={command.icon} />
-            </Tooltip.Trigger>
-            <Tooltip.Content>{command.title}</Tooltip.Content>
-          </Tooltip.Root>
-        </ContextMenu.Trigger>
-        <ContextMenu.Content class="rounded-none">
-          <ContextMenu.Item onclick={() => onUnpin(command.id)}>
-            <PinOff size={14} /> Unpin from title bar
-          </ContextMenu.Item>
-        </ContextMenu.Content>
-      </ContextMenu.Root>
-    {/each}
+    <Tooltip.Provider>
+      {#each pinned as command (command.id)}
+        <ContextMenu.Root>
+          <ContextMenu.Trigger class="no-drag">
+            <Tooltip.Root>
+              <Tooltip.Trigger
+                class="pinned-button"
+                onclick={() => onRun(command.id)}
+                aria-label={command.title}
+              >
+                <ActionIcon name={command.icon} />
+              </Tooltip.Trigger>
+              <Tooltip.Content>{command.title}</Tooltip.Content>
+            </Tooltip.Root>
+          </ContextMenu.Trigger>
+          <ContextMenu.Content class="rounded-none">
+            <ContextMenu.Item onclick={() => onUnpin(command.id)}>
+              <PinOff size={14} /> Unpin from title bar
+            </ContextMenu.Item>
+          </ContextMenu.Content>
+        </ContextMenu.Root>
+      {/each}
+    </Tooltip.Provider>
   </div>
 
   <button class="command-search no-drag" onclick={onSearch} aria-label="Search commands">
