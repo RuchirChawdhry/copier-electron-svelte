@@ -12,15 +12,9 @@ importers:
 
   .:
     dependencies:
-      '@electron-toolkit/preload':
-        specifier: ^3.0.2
-        version: 3.0.2(electron@44.11.6(supports-color@7.2.0))
       '@electron-toolkit/utils':
         specifier: ^4.0.0
         version: 4.0.0(electron@44.11.6(supports-color@7.2.0))
-      '@lucide/svelte':
-        specifier: ^1.80.0
-        version: 1.80.0(svelte@5.59.2(@typescript-eslint/types@8.74.0))
     devDependencies:
       '@electron-toolkit/eslint-config-prettier':
         specifier: ^3.0.1
@@ -37,6 +31,9 @@ importers:
       '@internationalized/date':
         specifier: ^3.12.4
         version: 3.12.4
+      '@lucide/svelte':
+        specifier: ^1.80.0
+        version: 1.80.0(svelte@5.59.2(@typescript-eslint/types@8.74.0))
       '@playwright/test':
         specifier: ^1.65.1
         version: 1.65.1
@@ -231,11 +228,6 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
-
-  '@electron-toolkit/preload@3.0.2':
-    resolution: {integrity: sha512-TWWPToXd8qPRfSXwzf5KVhpXMfONaUuRAZJHsKthKgZR/+LqX1dZVSSClQ8OTAEduvLGdecljCsoT2jSshfoUg==}
-    peerDependencies:
-      electron: '>=13.0.0'
 
   '@electron-toolkit/tsconfig@2.0.0':
     resolution: {integrity: sha512-AdPsP770WhW7b260h13SHMdmjEEHJL6xFtgi3jwgdsSQbJOkJLeNnnpZW9qxTPCvmRI6vmdzWz5K3gibFS6SNg==}
@@ -2845,10 +2837,6 @@ snapshots:
     transitivePeerDependencies:
       - '@typescript/native'
       - supports-color
-
-  '@electron-toolkit/preload@3.0.2(electron@44.11.6(supports-color@7.2.0))':
-    dependencies:
-      electron: 44.11.6(supports-color@7.2.0)
 
   '@electron-toolkit/tsconfig@2.0.0(@types/node@24.19.4)':
     dependencies:
