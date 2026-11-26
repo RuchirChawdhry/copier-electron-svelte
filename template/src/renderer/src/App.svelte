@@ -17,6 +17,7 @@
   import { APP_NAME } from '../../shared/brand';
   import { tabIndexForShortcut } from '../../shared/tabs';
   import {
+    APPEARANCES,
     DEFAULT_SETTINGS,
     MAX_PINNED_TABS,
     type AppSettings,
@@ -40,11 +41,11 @@
   });
   let paletteOpen = $state(false);
   const activeTab = $derived(tabs.find((tab) => tab.id === activeTabId) ?? tabs[0]);
-  const dark = $derived(settings.appearance === 'dark');
+  const dark = $derived(settings.appearance !== 'light');
 
   $effect(() => {
     document.documentElement.classList.toggle('dark', dark);
-    document.documentElement.classList.toggle('sepia', settings.appearance === 'sepia');
+    document.documentElement.classList.toggle('solarized', settings.appearance === 'solarized');
     document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
     window.desktop.setTitlebarTheme(settings.appearance);
   });
@@ -154,7 +155,7 @@
       case 'theme.toggle':
         save({
           appearance: (
-            { dark: 'light', light: 'sepia', sepia: 'dark' } satisfies Record<
+            { dark: 'light', light: 'solarized', solarized: 'dark' } satisfies Record<
               Appearance,
               Appearance
             >
@@ -362,16 +363,18 @@
         </div>
         <section class="settings-section">
           <h2>Appearance</h2>
-          <p>
-            Dark by default, with a clean light theme and a warm Solarized-inspired sepia theme.
-          </p>
+          <p>Dark by default, with light and the low-glare Solarized Dark palette.</p>
           <div class="setting-options">
-            {#each ['dark', 'light', 'sepia'] as appearance (appearance)}<Button
+            {#each APPEARANCES as appearance (appearance)}<Button
                 variant={settings.appearance === appearance ? 'default' : 'outline'}
                 size="sm"
                 onclick={() => save({ appearance: appearance as Appearance })}
               >
-                {appearance === 'sepia' ? 'Sepia' : appearance === 'dark' ? 'Dark' : 'Light'}
+                {appearance === 'solarized'
+                  ? 'Solarized'
+                  : appearance === 'dark'
+                    ? 'Dark'
+                    : 'Light'}
               </Button>{/each}
           </div>
         </section>

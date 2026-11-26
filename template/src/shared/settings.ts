@@ -1,6 +1,7 @@
 import type { CommandId } from './commands';
 
-export type Appearance = 'dark' | 'light' | 'sepia';
+export const APPEARANCES = ['dark', 'light', 'solarized'] as const;
+export type Appearance = (typeof APPEARANCES)[number];
 
 export interface PinnedTab {
   id: string;

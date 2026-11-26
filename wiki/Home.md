@@ -6,7 +6,7 @@ Build your next desktop app with an already useful workspace shell: Electron, Sv
 
 - **Workspace ready**: Sidebar, tabs, command launcher, status bar and preferences are already wired together.
 - **Desktop integration**: Native folder picker, secure preload boundary and Windows Jump List actions with recent folders.
-- **Three themes**: Dark by default, light and a warm Solarized-inspired sepia palette.
+- **Three themes**: Dark by default, light and Solarized Dark with comfortable text contrast.
 - **Agent-friendly**: Shared command definitions, type checking, linting, tests and an `AGENTS.md` in every generated project.
 - **Repeatable releases**: Electron Builder targets Windows, Linux and macOS; generated CI reuses centralized workflows.
 
@@ -27,7 +27,7 @@ pnpm dev
 - [Getting Started](Getting-Started) — template questions, setup and daily commands.
 - [Workspace and Tabs](Workspace-and-Tabs) — pinned tabs, keyboard shortcuts and title-bar actions.
 - [Commands and Jump Lists](Commands-and-Jump-Lists) — extend native and in-app commands.
-- [Themes and Styling](Themes-and-Styling) — customize dark, light, sepia and shadcn-svelte.
+- [Themes and Styling](Themes-and-Styling) — customize dark, light, Solarized and shadcn-svelte.
 - [Architecture](Architecture) — main/preload/renderer boundaries.
 - [Quality and CI](Quality-and-CI) — validation and packaging.
 - [Copier Reference](Copier-Reference) — template maintenance and upgrades.

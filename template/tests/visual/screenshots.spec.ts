@@ -75,16 +75,16 @@ test('captures the workspace, command launcher, tabs, settings, themes, and abou
     await capture('04-settings-dark.png');
 
     await page.getByRole('button', { name: 'Light' }).click();
-    await expect(page.locator('html')).not.toHaveClass(/dark|sepia/);
+    await expect(page.locator('html')).not.toHaveClass(/dark|solarized/);
     await capture('05-settings-light.png');
 
-    await page.getByRole('button', { name: 'Sepia' }).click();
-    await expect(page.locator('html')).toHaveClass(/sepia/);
-    await capture('06-settings-sepia.png');
+    await page.getByRole('button', { name: 'Solarized' }).click();
+    await expect(page.locator('html')).toHaveClass(/solarized/);
+    await capture('06-settings-solarized.png');
 
     await page.getByRole('button', { name: 'About' }).click();
     await expect(page.getByRole('heading', { name: /^About / })).toBeVisible();
-    await capture('07-about-sepia.png');
+    await capture('07-about-solarized.png');
   } finally {
     await application.close();
   }

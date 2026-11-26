@@ -3,10 +3,10 @@ import { readFile, mkdir, writeFile, rename } from 'node:fs/promises';
 import { join } from 'node:path';
 import { isCommandId } from '../shared/commands';
 import {
+  APPEARANCES,
   DEFAULT_SETTINGS,
   MAX_PINNED_TABS,
   type AppSettings,
-  type Appearance,
   type PinnedTab,
 } from '../shared/settings';
 
@@ -17,9 +17,8 @@ function settingsPath(): string {
 }
 
 function mergeSettings(value: Partial<AppSettings>): AppSettings {
-  const appearance: Appearance = ['dark', 'light', 'sepia'].includes(value.appearance ?? '')
-    ? value.appearance!
-    : DEFAULT_SETTINGS.appearance;
+  const appearance =
+    APPEARANCES.find((option) => option === value.appearance) ?? DEFAULT_SETTINGS.appearance;
 
   return {
     appearance,

@@ -57,12 +57,21 @@ test('workspace tabs, command search and pinned actions work', async () => {
     await search.fill('settings');
     await page.getByRole('option', { name: /Open settings/ }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
-    await page.getByRole('button', { name: 'Sepia' }).click();
-    await expect(page.locator('html')).toHaveClass(/sepia/);
+    await page.getByRole('button', { name: 'Solarized' }).click();
+    await expect(page.locator('html')).toHaveClass(/solarized/);
+    await expect(page.locator('html')).toHaveClass(/dark/);
+    await expect(page.locator('.workspace-main')).toHaveCSS('background-color', 'rgb(0, 43, 54)');
+    await expect(page.locator('.workspace-main')).toHaveCSS('color', 'rgb(147, 161, 161)');
+    await expect(page.locator('.workspace-sidebar')).toHaveCSS(
+      'background-color',
+      'rgb(7, 54, 66)',
+    );
 
     const action = page.locator('.settings-action').filter({ hasText: 'Switch theme' });
     await action.getByRole('button', { name: 'Pin' }).click();
     await expect(page.getByRole('button', { name: 'Switch theme' })).toBeVisible();
+    await page.getByRole('button', { name: 'Switch theme' }).click();
+    await expect(page.locator('html')).not.toHaveClass(/solarized/);
   } finally {
     await browser.close();
   }

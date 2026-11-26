@@ -9,7 +9,7 @@ Generated applications include:
 - A searchable command launcher in the title bar (`Ctrl+K` or `Cmd+K`).
 - Pinnable title-bar action buttons, with persisted preferences.
 - Windows Jump List tasks and recent workspaces.
-- A collapsible workspace sidebar, settings, dark/light/sepia themes and status bar.
+- A collapsible workspace sidebar, settings, dark/light/Solarized Dark themes and status bar.
 - A narrowly scoped, typed Electron preload API with context isolation and sandboxing.
 - TypeScript, ESLint, Oxlint, Prettier, Vitest, Playwright and Lefthook.
 - NSIS/MSI, AppImage/DEB and DMG/ZIP packaging scripts.
