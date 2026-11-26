@@ -1,0 +1,47 @@
+# {{ project_name }}
+
+{{ description }}
+
+A desktop-first workspace application built with Electron, Svelte 5, TypeScript and shadcn-svelte.
+
+## Development
+
+Requires Node.js 24 and pnpm 11.
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Quality commands:
+
+```bash
+pnpm format
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+## Built-in shell
+
+- Integrated title-bar tabs: open, activate, close and drag to reorder.
+- Command launcher from the title-bar search button or `Ctrl+K` / `Cmd+K`.
+- Pin or unpin commands from the launcher and Settings. Pinned actions persist between launches.
+- Windows taskbar Jump Lists for New Tab, Open Folder, Settings and recently opened folders.
+- Collapsible sidebar, status bar, themes and persistent preferences.
+- Typed, sandboxed Electron preload API for native folder selection and settings.
+
+To add a command, edit `src/shared/commands.ts` and its handler in `src/renderer/src/App.svelte`.
+
+## Packaging
+
+```bash
+pnpm build:win
+pnpm build:linux
+pnpm build:mac
+```
+
+Windows packaging includes NSIS and MSI. Linux includes AppImage and DEB. macOS includes DMG and ZIP. Native packaging and code signing should be tested on each target OS.
+
+The generated GitHub Actions workflow uses the shared Node CI workflow from `RuchirChawdhry/ci-workflows`. Running `pnpm test:e2e` requires a graphical session for Electron tests; the browser-only renderer test also requires an installed Playwright Chromium browser or `CHROMIUM_BIN`.

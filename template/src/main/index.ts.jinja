@@ -1,0 +1,164 @@
+import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron';
+import { basename, join } from 'node:path';
+import { is } from '@electron-toolkit/utils';
+import { COMMANDS, JUMP_LIST_COMMANDS, isCommandId, type CommandId } from '../shared/commands';
+import { getSettings, updateSettings } from './settings';
+import icon from '../../resources/icon.png?asset';
+
+let mainWindow: BrowserWindow | null = null;
+const pendingCommands: CommandId[] = [];
+const pendingFolders: string[] = [];
+
+function executeCommand(id: CommandId): void {
+  if (mainWindow?.webContents.isLoading()) {
+    pendingCommands.push(id);
+    return;
+  }
+  mainWindow?.webContents.send('command:execute', id);
+}
+
+function openFromArguments(args: string[]): void {
+  const id = args.find((argument) => argument.startsWith('--command='))?.slice('--command='.length);
+  if (id && isCommandId(id) && JUMP_LIST_COMMANDS.some((allowed) => allowed === id))
+    executeCommand(id);
+
+  const encoded = args
+    .find((argument) => argument.startsWith('--folder64='))
+    ?.slice('--folder64='.length);
+  if (encoded) openWorkspace(Buffer.from(encoded, 'base64url').toString('utf8'));
+}
+
+function openWorkspace(path: string): void {
+  if (mainWindow?.webContents.isLoading()) {
+    pendingFolders.push(path);
+    return;
+  }
+  mainWindow?.webContents.send('workspace:open', path);
+}
+
+function createWindow(): void {
+  const window = new BrowserWindow({
+    width: 1180,
+    height: 760,
+    minWidth: 760,
+    minHeight: 480,
+    show: false,
+    backgroundColor: '#101010',
+    titleBarStyle: 'hidden',
+    ...(process.platform !== 'darwin'
+      ? { titleBarOverlay: { color: '#171717', symbolColor: '#ededed', height: 42 } }
+      : {}),
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+  mainWindow = window;
+  window.on('ready-to-show', () => window.show());
+  window.on('closed', () => {
+    if (mainWindow === window) mainWindow = null;
+  });
+  window.webContents.on('did-finish-load', () => {
+    for (const command of pendingCommands.splice(0)) executeCommand(command);
+    for (const path of pendingFolders.splice(0)) openWorkspace(path);
+  });
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith('https://')) void shell.openExternal(url);
+    return { action: 'deny' };
+  });
+
+  if (is.dev && process.env.ELECTRON_RENDERER_URL) {
+    void window.loadURL(process.env.ELECTRON_RENDERER_URL);
+  } else {
+    void window.loadFile(join(__dirname, '../renderer/index.html'));
+  }
+}
+
+async function installJumpList(): Promise<void> {
+  if (process.platform !== 'win32' || !app.isPackaged) return;
+
+  const items = JUMP_LIST_COMMANDS.map((id) => {
+    const command = COMMANDS.find((item) => item.id === id)!;
+    return {
+      type: 'task' as const,
+      program: process.execPath,
+      args: `--command=${id}`,
+      title: command.title,
+      description: command.description,
+      iconPath: process.execPath,
+      iconIndex: 0,
+    };
+  });
+  const { recentFolders } = await getSettings();
+  const folders = recentFolders.map((path) => ({
+    type: 'task' as const,
+    program: process.execPath,
+    args: `--folder64=${Buffer.from(path).toString('base64url')}`,
+    title: basename(path),
+    description: path.slice(0, 260),
+    iconPath: process.execPath,
+    iconIndex: 0,
+  }));
+  const categories: Electron.JumpListCategory[] = [
+    { type: 'tasks', items },
+    ...(folders.length
+      ? [{ type: 'custom' as const, name: 'Recent Workspaces', items: folders }]
+      : []),
+  ];
+  const result = app.setJumpList(categories);
+  if (result !== 'ok') console.warn('Jump List registration:', result);
+}
+
+const hasLock = app.requestSingleInstanceLock();
+if (!hasLock) app.quit();
+
+app.on('second-instance', (_event, argv) => {
+  mainWindow?.show();
+  mainWindow?.focus();
+  openFromArguments(argv);
+});
+
+if (hasLock) {
+  app.whenReady().then(() => {
+    // prettier-ignore
+    if (process.platform === 'win32') app.setAppUserModelId({{ app_id | tojson }});
+    void installJumpList();
+
+    ipcMain.handle('settings:get', () => getSettings());
+    ipcMain.handle('settings:update', (_event, settings) => updateSettings(settings));
+    ipcMain.handle('folder:select', async () => {
+      const result = await dialog.showOpenDialog(mainWindow!, { properties: ['openDirectory'] });
+      if (result.canceled) return null;
+      const path = result.filePaths[0];
+      const { recentFolders } = await getSettings();
+      await updateSettings({
+        recentFolders: [path, ...recentFolders.filter((item) => item !== path)].slice(0, 6),
+      });
+      void installJumpList();
+      return path;
+    });
+
+    Menu.setApplicationMenu(
+      Menu.buildFromTemplate([
+        { role: 'appMenu' },
+        { role: 'fileMenu' },
+        { role: 'editMenu' },
+        { role: 'viewMenu' },
+        { role: 'windowMenu' },
+      ]),
+    );
+
+    createWindow();
+    openFromArguments(process.argv);
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+}
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});

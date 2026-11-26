@@ -1,0 +1,64 @@
+_min_copier_version: '9.0.0'
+_subdirectory: template
+_templates_suffix: .jinja
+_exclude:
+  - .git
+  - node_modules
+  - out
+  - dist
+  - test-results
+  - playwright-report
+  - .eslintcache
+
+project_name:
+  type: str
+  help: Human-readable application name.
+  default: My Desktop App
+
+project_slug:
+  type: str
+  help: Package name and executable basename (lowercase, hyphen-separated).
+  default: "{{ project_name | lower | replace(' ', '-') }}"
+
+github_owner:
+  type: str
+  default: RuchirChawdhry
+
+author:
+  type: str
+  default: Ruchir Chawdhry
+
+description:
+  type: str
+  default: A polished, local-first desktop application.
+
+app_id:
+  type: str
+  help: Stable reverse-DNS application ID, also used for Windows Jump Lists.
+  default: "com.{{ github_owner | lower }}.{{ project_slug | replace('-', '') }}"
+
+initialize_git:
+  type: bool
+  default: true
+  help: Create a Git repository if this is a new project.
+
+install_dependencies:
+  type: bool
+  default: true
+  help: Install pnpm dependencies and Git hooks automatically.
+
+_tasks:
+  - command: [git, init, -b, main]
+    when: "{{ initialize_git and _copier_operation == 'copy' }}"
+  - command: [pnpm, install]
+    when: "{{ install_dependencies }}"
+  - command: [pnpm, exec, lefthook, install]
+    when: "{{ install_dependencies }}"
+
+_message_after_copy: |
+  {{ project_name }} is ready.
+  cd {{ _copier_conf.dst_path }}
+  pnpm dev
+
+_message_after_update: |
+  {{ project_name }} updated. Review any conflicts, then run pnpm build.

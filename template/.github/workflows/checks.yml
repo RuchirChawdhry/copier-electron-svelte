@@ -1,0 +1,19 @@
+name: Desktop app CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    uses: RuchirChawdhry/ci-workflows/.github/workflows/node-ci.yml@main
+    with:
+      node-version: '24'
+      package-manager: pnpm
+      artifact-path: out/**
+      artifact-name: electron-app-build
