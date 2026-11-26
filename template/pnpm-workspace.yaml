@@ -1,3 +1,9 @@
 allowBuilds:
   electron-winstaller: true
   lefthook: true
+
+# Electron Builder still depends on vulnerable minimatch 9.x/10.x releases.
+# Keep its two transitive consumers on the patched 11.x line.
+overrides:
+  '@electron/universal>minimatch': '^11.0.1'
+  'app-builder-lib>minimatch': '^11.0.1'
