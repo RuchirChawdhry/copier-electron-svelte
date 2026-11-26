@@ -21,7 +21,13 @@ The **template repository** keeps its documentation publishing workflows separat
 ## Template repository Windows workflows
 
 - **Windows template tests** (`windows-ci.yml`) runs automatically on pushes to `main` and pull requests that modify the template. It renders a fresh Copier application on `windows-latest`, installs the generated app's pinned Node/pnpm dependencies, then lints, typechecks, runs Vitest, builds Electron, and runs the Playwright desktop integration tests.
-- **Windows UI screenshots (WinApp)** (`windows-screenshots.yml`) is a separate **manual** GitHub Actions workflow. Select it under the repository's **Actions** tab, choose **Run workflow**, then download the `windows-ui-screenshots` artifact. It builds a fresh generated app and uses [Microsoft WinApp CLI](https://github.com/microsoft/winappCli) to capture seven states: dark workspace, command launcher, pinned tabs, dark/light/sepia Settings, and About.
+- **Windows UI screenshots (WinApp)** (`windows-screenshots.yml`) is a separate **manual** GitHub Actions workflow. Select it under the repository's **Actions** tab and choose **Run workflow**. It builds a fresh generated app and uses [Microsoft WinApp CLI](https://github.com/microsoft/winappCli) to capture seven states: dark workspace, command launcher, pinned tabs, dark/light/sepia Settings, and About. The captures use `--capture-screen` to produce opaque window images without Windows Graphics Capture's transparent borders.
+
+### Version-controlled screenshots
+
+After the visual test passes, the manual workflow replaces the PNGs in **`assets/screenshots/`** and commits them to the branch it ran on. Filenames remain stable (`01-workspace-dark.png` through `07-about-sepia.png`); existing PNGs in that managed directory are removed before copying the new set, so obsolete images do not accumulate. If the files are unchanged, no commit is created. The workflow also uploads `windows-ui-screenshots` as a downloadable run artifact.
+
+The commit step uses the workflow's `GITHUB_TOKEN` with `contents: write`, and simultaneous runs on the same branch are serialized. It never force-pushes. If the repository requires pull requests for the selected branch, the push will fail and you can still download the screenshots from the workflow artifact.
 
 The screenshot workflow requires Windows graphical capture support. GitHub-hosted `windows-latest` runners may not expose a usable interactive desktop to Windows Graphics Capture; if captures fail despite successful builds, use a self-hosted Windows runner with an active desktop session. Failed screenshot commands fail the visual test, and the artifact upload still attempts to retain any captures already produced.
 

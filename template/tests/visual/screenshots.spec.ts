@@ -29,18 +29,16 @@ test('captures the workspace, command launcher, tabs, settings, themes, and abou
     async function capture(filename: string): Promise<void> {
       await page.waitForTimeout(300);
       const file = resolve(screenshotDir, filename);
-      const args = ['ui', 'screenshot', '-w', hwnd, '--output', file, '--json'];
-      const firstCapture = await execFileAsync('winapp', [...args, '--focus'], {
-        timeout: 30_000,
-      });
-      if (/\bblack\b/i.test(firstCapture.stderr)) {
-        // WGC can save an all-black PNG with exit code 0; retry screen capture.
-        const retry = await execFileAsync('winapp', [...args, '--capture-screen'], {
+      // Capture the opaque on-screen window rectangle, without WGC's translucent border.
+      const { stderr } = await execFileAsync(
+        'winapp',
+        ['ui', 'screenshot', '-w', hwnd, '--capture-screen', '--output', file, '--json'],
+        {
           timeout: 30_000,
-        });
-        if (/\bblack\b/i.test(retry.stderr)) {
-          throw new Error(`WinApp captured an all-black image for ${filename}`);
-        }
+        },
+      );
+      if (/\bblack\b/i.test(stderr)) {
+        throw new Error(`WinApp captured an all-black image for ${filename}`);
       }
 
       // A successful CLI exit without an actual PNG is not a successful capture.

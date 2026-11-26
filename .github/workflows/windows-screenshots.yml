@@ -4,7 +4,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   screenshots:
@@ -50,12 +54,34 @@ jobs:
         working-directory: .ci-generated
         run: pnpm test:screenshots
 
+      - name: Replace tracked screenshots
+        shell: pwsh
+        run: |
+          $destination = 'assets/screenshots'
+          New-Item -ItemType Directory -Path $destination -Force | Out-Null
+          Get-ChildItem -Path $destination -Filter '*.png' -File | Remove-Item -Force
+          Copy-Item -Path '.ci-generated/screenshots/*.png' -Destination $destination -Force
+
+      - name: Commit updated screenshots
+        shell: pwsh
+        run: |
+          git add -A -- assets/screenshots
+          $changed = @(git diff --cached --name-only -- assets/screenshots)
+          if ($changed.Count -eq 0) {
+            Write-Host 'Screenshots have not changed.'
+            exit 0
+          }
+
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'docs: refresh Windows UI screenshots'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git push origin "HEAD:$env:GITHUB_REF"
+
       - name: Upload screen captures and test reports
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-ui-screenshots
           path: |
-            .ci-generated/screenshots/
+            assets/screenshots/
             .ci-generated/test-results/
           if-no-files-found: warn
