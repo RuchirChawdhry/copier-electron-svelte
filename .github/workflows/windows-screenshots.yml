@@ -37,6 +37,18 @@ jobs:
           $packageManager = (Get-Content package.json -Raw | ConvertFrom-Json).packageManager
           npm install --global $packageManager
 
+      - name: Locate pnpm store
+        id: pnpm-store
+        working-directory: .ci-generated
+        run: '"path=$(pnpm store path --silent)" >> $env:GITHUB_OUTPUT'
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('template/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         working-directory: .ci-generated
         run: pnpm install --frozen-lockfile

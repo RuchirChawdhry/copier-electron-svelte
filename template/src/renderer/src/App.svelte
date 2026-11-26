@@ -41,6 +41,7 @@
     pinnedCommands: [...DEFAULT_SETTINGS.pinnedCommands],
   });
   let paletteOpen = $state(false);
+  let latestSettingsSave = 0;
   const activeTab = $derived(tabs.find((tab) => tab.id === activeTabId) ?? tabs[0]);
   const dark = $derived(settings.appearance !== 'light');
   const contextMenuGroups = [
@@ -121,10 +122,11 @@
 
   function save(change: Partial<AppSettings>): void {
     settings = { ...settings, ...change };
+    const sequence = ++latestSettingsSave;
     void window.desktop
       .updateSettings(change)
       .then((saved) => {
-        settings = saved;
+        if (sequence === latestSettingsSave) settings = saved;
       })
       .catch((error) => toast.error(`Could not save settings: ${error}`));
   }

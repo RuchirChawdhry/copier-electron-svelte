@@ -11,6 +11,13 @@ import {
 } from '../shared/settings';
 
 let settings: AppSettings | undefined;
+let settingsLoading: Promise<AppSettings> | undefined;
+let writing = false;
+const pending: {
+  change: Partial<AppSettings>;
+  resolve: (saved: AppSettings) => void;
+  reject: (error: unknown) => void;
+}[] = [];
 
 function settingsPath(): string {
   return join(app.getPath('userData'), 'app', 'settings.json');
@@ -54,8 +61,7 @@ function mergeSettings(value: Partial<AppSettings>): AppSettings {
   };
 }
 
-export async function getSettings(): Promise<AppSettings> {
-  if (settings) return settings;
+async function loadSettings(): Promise<AppSettings> {
   try {
     settings = mergeSettings(
       JSON.parse(await readFile(settingsPath(), 'utf8')) as Partial<AppSettings>,
@@ -72,11 +78,46 @@ export async function getSettings(): Promise<AppSettings> {
   return settings;
 }
 
-export async function updateSettings(value: Partial<AppSettings>): Promise<AppSettings> {
-  settings = mergeSettings({ ...(await getSettings()), ...value });
-  const destination = settingsPath();
-  await mkdir(join(app.getPath('userData'), 'app'), { recursive: true });
-  await writeFile(`${destination}.tmp`, JSON.stringify(settings, null, 2), 'utf8');
-  await rename(`${destination}.tmp`, destination);
-  return settings;
+export function getSettings(): Promise<AppSettings> {
+  return settings ? Promise.resolve(settings) : (settingsLoading ??= loadSettings());
+}
+
+async function flushSettings(): Promise<void> {
+  if (writing) return;
+  writing = true;
+
+  try {
+    let current = await getSettings();
+    const destination = settingsPath();
+    await mkdir(join(app.getPath('userData'), 'app'), { recursive: true });
+
+    while (pending.length) {
+      const batch = pending.splice(0);
+      const next = batch.reduce(
+        (state, { change }) => mergeSettings({ ...state, ...change }),
+        current,
+      );
+      try {
+        await writeFile(`${destination}.tmp`, JSON.stringify(next, null, 2), 'utf8');
+        await rename(`${destination}.tmp`, destination);
+        current = next;
+        settings = next;
+        for (const request of batch) request.resolve(next);
+      } catch (error) {
+        for (const request of batch) request.reject(error);
+      }
+    }
+  } catch (error) {
+    for (const request of pending.splice(0)) request.reject(error);
+  } finally {
+    writing = false;
+    if (pending.length) void flushSettings();
+  }
+}
+
+export function updateSettings(change: Partial<AppSettings>): Promise<AppSettings> {
+  return new Promise((resolve, reject) => {
+    pending.push({ change, resolve, reject });
+    void flushSettings();
+  });
 }
