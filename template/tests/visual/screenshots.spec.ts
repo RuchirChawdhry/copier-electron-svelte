@@ -1,8 +1,9 @@
 import { _electron as electron, expect, test } from '@playwright/test';
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, stat } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
+import { makeWindowScreenshotOpaque } from './normalize-screenshot';
 
 const execFileAsync = promisify(execFile);
 const screenshotDir = resolve('screenshots');
@@ -29,22 +30,27 @@ test('captures the workspace, command launcher, tabs, settings, themes, and abou
     async function capture(filename: string): Promise<void> {
       await page.waitForTimeout(300);
       const file = resolve(screenshotDir, filename);
-      // Capture the opaque on-screen window rectangle, without WGC's translucent border.
-      const { stderr } = await execFileAsync(
-        'winapp',
-        ['ui', 'screenshot', '-w', hwnd, '--capture-screen', '--output', file, '--json'],
-        {
+      const args = ['ui', 'screenshot', '-w', hwnd, '--output', file, '--json'];
+      const firstCapture = await execFileAsync('winapp', [...args, '--focus'], {
+        timeout: 30_000,
+      });
+      if (/\bblack\b/i.test(firstCapture.stderr)) {
+        // WGC can report an all-black frame; retry using WinApp's screen mode.
+        const retry = await execFileAsync('winapp', [...args, '--capture-screen'], {
           timeout: 30_000,
-        },
-      );
-      if (/\bblack\b/i.test(stderr)) {
-        throw new Error(`WinApp captured an all-black image for ${filename}`);
+        });
+        if (/\bblack\b/i.test(retry.stderr)) {
+          throw new Error(`WinApp captured an all-black image for ${filename}`);
+        }
       }
 
       // A successful CLI exit without an actual PNG is not a successful capture.
       const pngSignature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
       const contents = await readFile(file);
       expect(contents.subarray(0, 8).equals(pngSignature)).toBe(true);
+      // WinApp's DWM capture includes transparent shadows; crop them and make
+      // the remaining rounded corners opaque while preserving window content.
+      await writeFile(file, makeWindowScreenshotOpaque(contents));
       expect((await stat(file)).size).toBeGreaterThan(1_000);
       await test.info().attach(filename, { path: file, contentType: 'image/png' });
     }

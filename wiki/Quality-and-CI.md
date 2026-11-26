@@ -21,7 +21,7 @@ The **template repository** keeps its documentation publishing workflows separat
 ## Template repository Windows workflows
 
 - **Windows template tests** (`windows-ci.yml`) runs automatically on pushes to `main` and pull requests that modify the template. It renders a fresh Copier application on `windows-latest`, installs the generated app's pinned Node/pnpm dependencies, then lints, typechecks, runs Vitest, builds Electron, and runs the Playwright desktop integration tests.
-- **Windows UI screenshots (WinApp)** (`windows-screenshots.yml`) is a separate **manual** GitHub Actions workflow. Select it under the repository's **Actions** tab and choose **Run workflow**. It builds a fresh generated app and uses [Microsoft WinApp CLI](https://github.com/microsoft/winappCli) to capture seven states: dark workspace, command launcher, pinned tabs, dark/light/sepia Settings, and About. The captures use `--capture-screen` to produce opaque window images without Windows Graphics Capture's transparent borders.
+- **Windows UI screenshots (WinApp)** (`windows-screenshots.yml`) is a separate **manual** GitHub Actions workflow. Select it under the repository's **Actions** tab and choose **Run workflow**. It builds a fresh generated app and uses [Microsoft WinApp CLI](https://github.com/microsoft/winappCli) to capture seven states: dark workspace, command launcher, pinned tabs, dark/light/sepia Settings, and About. WinApp directly captures the window using Windows Graphics Capture (`--focus`, with `--capture-screen` as a fallback). The test then trims its transparent DWM shadow and composites rounded corners into an opaque PNG, so the committed assets have no transparent padding.
 
 ### Version-controlled screenshots
 
