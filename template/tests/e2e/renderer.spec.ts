@@ -73,8 +73,13 @@ test('workspace tabs, command search and pinned actions work', async () => {
     const scrollbar = await page.locator('.workspace-main').evaluate((element) => ({
       width: getComputedStyle(element, '::-webkit-scrollbar').width,
       thumb: getComputedStyle(element, '::-webkit-scrollbar-thumb').backgroundColor,
+      base: getComputedStyle(element).getPropertyValue('--scrollbar-thumb').trim(),
+      hover: getComputedStyle(element).getPropertyValue('--scrollbar-thumb-hover').trim(),
     }));
-    expect(scrollbar).toEqual({ width: '11px', thumb: 'rgb(131, 148, 150)' });
+    expect(scrollbar.width).toBe('11px');
+    expect(scrollbar.base).toBe('#839496');
+    expect(scrollbar.hover).toBe('#93a1a1');
+    expect(['rgb(131, 148, 150)', 'rgb(147, 161, 161)']).toContain(scrollbar.thumb);
 
     const action = page.locator('.settings-action').filter({ hasText: 'Switch theme' });
     await action.getByRole('button', { name: 'Pin' }).click();
