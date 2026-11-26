@@ -16,6 +16,7 @@ This application uses Electron, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn
 - Register a new application command in `src/shared/commands.ts` before adding a button or shortcut.
 - Route command execution through `run()` in `App.svelte` or a domain-specific dispatcher that replaces it.
 - Title-bar pinned actions use the same IDs as the command launcher. Persist pins with `AppSettings`.
+- The workspace right-click menu reuses command IDs and handlers. Add menu entries to the grouped list in `App.svelte`; keep it consistent with the title-bar launcher.
 - Add stable, context-free Windows Jump List tasks to `JUMP_LIST_COMMANDS`. Parse task launch arguments in the main process, including when a second instance is launched.
 - Do not implement tray behavior. Closing the final window quits on Windows/Linux; macOS keeps its normal application lifecycle.
 - Tabs are application views, not separate Electron windows. Keep `src/renderer/src/lib/components/shell/Titlebar.svelte` independent of domain-specific editors.

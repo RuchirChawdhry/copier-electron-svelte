@@ -30,6 +30,7 @@
   import { Button } from '$lib/components/ui/button/index.js';
   import { Toaster } from '$lib/components/ui/sonner/index.js';
   import { Badge } from '$lib/components/ui/badge/index.js';
+  import * as ContextMenu from '$lib/components/ui/context-menu/index.js';
 
   type Tab = PinnedTab & { pinned: boolean };
 
@@ -42,6 +43,10 @@
   let paletteOpen = $state(false);
   const activeTab = $derived(tabs.find((tab) => tab.id === activeTabId) ?? tabs[0]);
   const dark = $derived(settings.appearance !== 'light');
+  const contextMenuGroups = [
+    ['tab.new', 'folder.open', 'palette.open'],
+    ['sidebar.toggle', 'theme.toggle', 'settings.open'],
+  ] as const satisfies readonly (readonly CommandId[])[];
 
   $effect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -242,182 +247,213 @@
     platform={window.desktop.platform}
   />
 
-  <div class="workspace-body">
-    {#if !settings.sidebarCollapsed}
-      <aside class="workspace-sidebar">
-        <div class="sidebar-heading">
-          <span>WORKSPACE</span><button
-            aria-label="Hide sidebar"
+  <ContextMenu.Root>
+    <ContextMenu.Trigger class="workspace-body">
+      {#if !settings.sidebarCollapsed}
+        <aside class="workspace-sidebar">
+          <div class="sidebar-heading">
+            <span>WORKSPACE</span><button
+              aria-label="Hide sidebar"
+              onclick={() => run('sidebar.toggle')}
+            >
+              <PanelLeftClose size={16} />
+            </button>
+          </div>
+          <button
+            class:chosen={activeTab.kind === 'workspace'}
+            class="sidebar-item"
+            onclick={() => createTab()}
+          >
+            <LayoutDashboard size={15} /> Overview
+          </button>
+          <button
+            class:chosen={activeTab.kind === 'settings'}
+            class="sidebar-item"
+            onclick={() => run('settings.open')}
+          >
+            <Settings size={15} /> Settings
+          </button>
+          <button
+            class:chosen={activeTab.kind === 'about'}
+            class="sidebar-item"
+            onclick={() => run('about.open')}
+          >
+            <Info size={15} /> About
+          </button>
+          <div class="sidebar-filler"></div>
+          <button class="sidebar-item" onclick={() => run('folder.open')}>
+            <FolderOpen size={15} /> Open folder…
+          </button>
+        </aside>
+      {:else}
+        <aside class="sidebar-rail">
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label="Show sidebar"
             onclick={() => run('sidebar.toggle')}
           >
-            <PanelLeftClose size={16} />
-          </button>
-        </div>
-        <button
-          class:chosen={activeTab.kind === 'workspace'}
-          class="sidebar-item"
-          onclick={() => createTab()}
-        >
-          <LayoutDashboard size={15} /> Overview
-        </button>
-        <button
-          class:chosen={activeTab.kind === 'settings'}
-          class="sidebar-item"
-          onclick={() => run('settings.open')}
-        >
-          <Settings size={15} /> Settings
-        </button>
-        <button
-          class:chosen={activeTab.kind === 'about'}
-          class="sidebar-item"
-          onclick={() => run('about.open')}
-        >
-          <Info size={15} /> About
-        </button>
-        <div class="sidebar-filler"></div>
-        <button class="sidebar-item" onclick={() => run('folder.open')}>
-          <FolderOpen size={15} /> Open folder…
-        </button>
-      </aside>
-    {:else}
-      <aside class="sidebar-rail">
-        <Button
-          size="icon-sm"
-          variant="ghost"
-          aria-label="Show sidebar"
-          onclick={() => run('sidebar.toggle')}
-        >
-          <PanelLeftOpen size={17} />
-        </Button>
-      </aside>
-    {/if}
+            <PanelLeftOpen size={17} />
+          </Button>
+        </aside>
+      {/if}
 
-    <main class="workspace-main" data-testid="workspace-main">
-      {#if activeTab.kind === 'workspace'}
-        <div class="page-head">
-          <div>
-            <div class="eyebrow">WORKSPACE</div>
-            <h1>{activeTab.title}</h1>
-            <p>Everything you need to start building is ready.</p>
+      <main class="workspace-main" data-testid="workspace-main">
+        {#if activeTab.kind === 'workspace'}
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">WORKSPACE</div>
+              <h1>{activeTab.title}</h1>
+              <p>Everything you need to start building is ready.</p>
+            </div>
+            <Badge variant="secondary"><Check size={13} class="mr-1" /> Ready</Badge>
           </div>
-          <Badge variant="secondary"><Check size={13} class="mr-1" /> Ready</Badge>
-        </div>
-        {#if activeTab.folder}
-          <div class="folder-location">
-            <FolderOpen size={18} /><span title={activeTab.folder}>{activeTab.folder}</span>
+          {#if activeTab.folder}
+            <div class="folder-location">
+              <FolderOpen size={18} /><span title={activeTab.folder}>{activeTab.folder}</span>
+            </div>
+          {/if}
+          <div class="feature-grid">
+            <button class="feature-card" onclick={() => run('folder.open')}>
+              <FolderOpen size={21} /><strong>Open folder</strong><span>
+                Choose a local workspace
+              </span><ChevronRight size={15} class="feature-chevron" />
+            </button>
+            <button class="feature-card" onclick={() => run('palette.open')}>
+              <Sparkles size={21} /><strong>Command launcher</strong><span>
+                Find commands with {window.desktop.platform === 'darwin' ? '⌘K' : 'Ctrl+K'}
+              </span><ChevronRight size={15} class="feature-chevron" />
+            </button>
+            <button class="feature-card" onclick={() => run('tab.new')}>
+              <Plus size={21} /><strong>New tab</strong><span>
+                Open another workspace
+              </span><ChevronRight size={15} class="feature-chevron" />
+            </button>
           </div>
-        {/if}
-        <div class="feature-grid">
-          <button class="feature-card" onclick={() => run('folder.open')}>
-            <FolderOpen size={21} /><strong>Open folder</strong><span>
-              Choose a local workspace
-            </span><ChevronRight size={15} class="feature-chevron" />
-          </button>
-          <button class="feature-card" onclick={() => run('palette.open')}>
-            <Sparkles size={21} /><strong>Command launcher</strong><span>
-              Find commands with {window.desktop.platform === 'darwin' ? '⌘K' : 'Ctrl+K'}
-            </span><ChevronRight size={15} class="feature-chevron" />
-          </button>
-          <button class="feature-card" onclick={() => run('tab.new')}>
-            <Plus size={21} /><strong>New tab</strong><span>
-              Open another workspace
-            </span><ChevronRight size={15} class="feature-chevron" />
-          </button>
-        </div>
-        {#if settings.recentFolders.length}
+          {#if settings.recentFolders.length}
+            <section class="page-section">
+              <h2>Recent workspaces</h2>
+              <p>These folders also appear in your Windows taskbar Jump List.</p>
+              <div class="recent-folders">
+                {#each settings.recentFolders as folder (folder)}
+                  <button title={folder} onclick={() => createTab('workspace', folder)}>
+                    <FolderOpen size={15} />
+                    <span>{folder}</span>
+                  </button>
+                {/each}
+              </div>
+            </section>
+          {/if}
           <section class="page-section">
-            <h2>Recent workspaces</h2>
-            <p>These folders also appear in your Windows taskbar Jump List.</p>
-            <div class="recent-folders">
-              {#each settings.recentFolders as folder (folder)}
-                <button title={folder} onclick={() => createTab('workspace', folder)}>
-                  <FolderOpen size={15} />
-                  <span>{folder}</span>
-                </button>
+            <h2>Title-bar actions</h2>
+            <p>
+              Pin frequently used commands from the launcher. Right-click a pinned button to remove
+              it.
+            </p>
+            <div class="action-tags">
+              {#each settings.pinnedCommands as id (id)}
+                {@const command = COMMANDS.find((item) => item.id === id)}
+                {#if command}
+                  <span class="action-tag"><ActionIcon name={command.icon} />{command.title}</span>
+                {/if}
               {/each}
             </div>
           </section>
-        {/if}
-        <section class="page-section">
-          <h2>Title-bar actions</h2>
-          <p>
-            Pin frequently used commands from the launcher. Right-click a pinned button to remove
-            it.
-          </p>
-          <div class="action-tags">
-            {#each settings.pinnedCommands as id (id)}
-              {@const command = COMMANDS.find((item) => item.id === id)}
-              {#if command}
-                <span class="action-tag"><ActionIcon name={command.icon} />{command.title}</span>
-              {/if}
-            {/each}
+        {:else if activeTab.kind === 'settings'}
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">PREFERENCES</div>
+              <h1>Settings</h1>
+              <p>Changes are saved automatically.</p>
+            </div>
           </div>
-        </section>
-      {:else if activeTab.kind === 'settings'}
-        <div class="page-head">
-          <div>
-            <div class="eyebrow">PREFERENCES</div>
-            <h1>Settings</h1>
-            <p>Changes are saved automatically.</p>
-          </div>
-        </div>
-        <section class="settings-section">
-          <h2>Appearance</h2>
-          <p>Dark by default, with light and the low-glare Solarized Dark palette.</p>
-          <div class="setting-options">
-            {#each APPEARANCES as appearance (appearance)}<Button
-                variant={settings.appearance === appearance ? 'default' : 'outline'}
-                size="sm"
-                onclick={() => save({ appearance: appearance as Appearance })}
-              >
-                {appearance === 'solarized'
-                  ? 'Solarized'
-                  : appearance === 'dark'
-                    ? 'Dark'
-                    : 'Light'}
-              </Button>{/each}
-          </div>
-        </section>
-        <section class="settings-section">
-          <h2>Pinned tabs</h2>
-          <p>Right-click a tab to pin it. Up to three pinned tabs are restored on launch.</p>
-          <p>Use Ctrl/Cmd+1 through 8 for numbered tabs and Ctrl/Cmd+9 for the last tab.</p>
-        </section>
-        <section class="settings-section">
-          <h2>Title-bar commands</h2>
-          <p>Pin up to eight commands. The selected buttons appear alongside your tabs.</p>
-          <div class="settings-actions">
-            {#each COMMANDS as command (command.id)}
-              <div class="settings-action">
-                <ActionIcon name={command.icon} /><span>{command.title}</span><Button
+          <section class="settings-section">
+            <h2>Appearance</h2>
+            <p>Dark by default, with light and the low-glare Solarized Dark palette.</p>
+            <div class="setting-options">
+              {#each APPEARANCES as appearance (appearance)}<Button
+                  variant={settings.appearance === appearance ? 'default' : 'outline'}
                   size="sm"
-                  variant={settings.pinnedCommands.includes(command.id) ? 'secondary' : 'outline'}
-                  onclick={() => togglePin(command.id)}
+                  onclick={() => save({ appearance: appearance as Appearance })}
                 >
-                  {settings.pinnedCommands.includes(command.id) ? 'Unpin' : 'Pin'}
-                </Button>
-              </div>
-            {/each}
+                  {appearance === 'solarized'
+                    ? 'Solarized'
+                    : appearance === 'dark'
+                      ? 'Dark'
+                      : 'Light'}
+                </Button>{/each}
+            </div>
+          </section>
+          <section class="settings-section">
+            <h2>Pinned tabs</h2>
+            <p>Right-click a tab to pin it. Up to three pinned tabs are restored on launch.</p>
+            <p>Use Ctrl/Cmd+1 through 8 for numbered tabs and Ctrl/Cmd+9 for the last tab.</p>
+          </section>
+          <section class="settings-section">
+            <h2>Title-bar commands</h2>
+            <p>Pin up to eight commands. The selected buttons appear alongside your tabs.</p>
+            <div class="settings-actions">
+              {#each COMMANDS as command (command.id)}
+                <div class="settings-action">
+                  <ActionIcon name={command.icon} /><span>{command.title}</span><Button
+                    size="sm"
+                    variant={settings.pinnedCommands.includes(command.id) ? 'secondary' : 'outline'}
+                    onclick={() => togglePin(command.id)}
+                  >
+                    {settings.pinnedCommands.includes(command.id) ? 'Unpin' : 'Pin'}
+                  </Button>
+                </div>
+              {/each}
+            </div>
+          </section>
+        {:else}
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">APPLICATION</div>
+              <h1>About {APP_NAME}</h1>
+              <p>Electron + Svelte 5 + TypeScript + shadcn-svelte.</p>
+            </div>
           </div>
-        </section>
-      {:else}
-        <div class="page-head">
-          <div>
-            <div class="eyebrow">APPLICATION</div>
-            <h1>About {APP_NAME}</h1>
-            <p>Electron + Svelte 5 + TypeScript + shadcn-svelte.</p>
-          </div>
-        </div>
-        <section class="page-section">
-          <h2>Desktop-first foundation</h2>
-          <p>
-            Workspace tabs, title-bar commands, native folder selection, persistent preferences and
-            Windows Jump List tasks are ready for extension.
-          </p>
-        </section>
-      {/if}
-    </main>
-  </div>
+          <section class="page-section">
+            <h2>Desktop-first foundation</h2>
+            <p>
+              Workspace tabs, title-bar commands, native folder selection, persistent preferences
+              and Windows Jump List tasks are ready for extension.
+            </p>
+          </section>
+        {/if}
+      </main>
+    </ContextMenu.Trigger>
+    <ContextMenu.Content
+      class="min-w-56 rounded-none"
+      aria-label="Workspace actions"
+      data-testid="workspace-context-menu"
+    >
+      <ContextMenu.Label>Workspace actions</ContextMenu.Label>
+      {#each contextMenuGroups as group, index (index)}
+        {#if index > 0}
+          <ContextMenu.Separator />
+        {/if}
+        {#each group as id (id)}
+          {@const command = COMMANDS.find((item) => item.id === id)}
+          {#if command}
+            <ContextMenu.Item onclick={() => run(id)}>
+              <ActionIcon name={command.icon} />
+              {command.title}
+              {#if command.shortcut}
+                <ContextMenu.Shortcut>
+                  {command.shortcut.replace(
+                    'Mod+',
+                    window.desktop.platform === 'darwin' ? '⌘' : 'Ctrl+',
+                  )}
+                </ContextMenu.Shortcut>
+              {/if}
+            </ContextMenu.Item>
+          {/if}
+        {/each}
+      {/each}
+    </ContextMenu.Content>
+  </ContextMenu.Root>
 
   <footer class="statusbar">
     <span class="status-indicator"></span><span>Ready</span>

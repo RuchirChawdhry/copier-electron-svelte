@@ -10,7 +10,7 @@ const screenshotDir = resolve('screenshots');
 
 test.skip(process.platform !== 'win32', 'WinApp CLI screenshots require Windows');
 
-test('captures the workspace, command launcher, tabs, settings, themes, and about', async () => {
+test('captures the workspace, context menu, command launcher, tabs, settings, themes, and about', async () => {
   const application = await electron.launch({ args: ['./out/main/index.js'] });
 
   try {
@@ -56,6 +56,18 @@ test('captures the workspace, command launcher, tabs, settings, themes, and abou
     }
 
     await capture('01-workspace-dark.png');
+
+    await page.locator('.workspace-main').click({
+      button: 'right',
+      position: { x: 520, y: 190 },
+    });
+    const workspaceMenu = page.getByTestId('workspace-context-menu');
+    await expect(workspaceMenu).toBeVisible();
+    await expect(workspaceMenu.getByRole('menuitem')).toHaveCount(6);
+    await capture('08-context-menu-dark.png');
+    await expect(workspaceMenu).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(workspaceMenu).toBeHidden();
 
     await page.getByRole('button', { name: 'Search commands' }).click();
     await expect(page.getByPlaceholder('Search commands and actions…')).toBeVisible();

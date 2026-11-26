@@ -14,6 +14,12 @@ The window uses one continuous title bar: application mark, tabs, New Tab, dragg
 
 Tabs can represent workspaces, Settings and About. Open Folder creates a workspace tab for the selected directory.
 
+## Workspace right-click menu
+
+Right-click the workspace content or sidebar to open the theme-matching context menu. It provides New workspace tab, Open folder, Open command launcher, Toggle sidebar, Switch theme and Open settings. These entries dispatch the same registered commands as the keyboard shortcuts and title-bar buttons; they are not separate implementations.
+
+The menu uses the existing shadcn-svelte context-menu components and is part of the Electron renderer, so WinApp can capture it in `screenshots/08-context-menu-dark.png`. The title-bar tabs and pinned action buttons retain their own context-specific menus.
+
 ## Keyboard shortcuts
 
 | Windows / Linux | macOS | Action |

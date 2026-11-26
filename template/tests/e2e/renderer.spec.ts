@@ -43,6 +43,17 @@ test('workspace tabs, command search and pinned actions work', async () => {
     await expect(
       page.locator('.pinned-actions').getByRole('button', { name: 'New workspace tab' }),
     ).toBeVisible();
+    await page.locator('.workspace-main').click({
+      button: 'right',
+      position: { x: 520, y: 190 },
+    });
+    const workspaceMenu = page.getByTestId('workspace-context-menu');
+    await expect(workspaceMenu).toBeVisible();
+    await expect(workspaceMenu.getByRole('menuitem')).toHaveCount(6);
+    await workspaceMenu.getByRole('menuitem', { name: /Open command launcher/ }).click();
+    await expect(page.getByPlaceholder('Search commands and actions…')).toBeVisible();
+    await page.keyboard.press('Escape');
+
     await page.getByRole('button', { name: 'New tab', exact: true }).click();
     await expect(page.getByRole('tab', { name: 'Workspace' })).toHaveCount(2);
 
