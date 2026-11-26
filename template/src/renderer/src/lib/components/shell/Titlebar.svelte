@@ -148,6 +148,12 @@
   </Button>
   <div class="title-spacer"></div>
 
+  <button class="command-search no-drag" onclick={onSearch} aria-label="Search commands">
+    <Search size={14} />
+    <span>Search commands…</span>
+    <kbd>{mac ? '⌘ K' : 'Ctrl K'}</kbd>
+  </button>
+
   <div class="pinned-actions" aria-label="Pinned commands">
     <Tooltip.Provider>
       {#each pinned as command (command.id)}
@@ -173,10 +179,4 @@
       {/each}
     </Tooltip.Provider>
   </div>
-
-  <button class="command-search no-drag" onclick={onSearch} aria-label="Search commands">
-    <Search size={14} />
-    <span>Search commands…</span>
-    <kbd>{mac ? '⌘ K' : 'Ctrl K'}</kbd>
-  </button>
 </header>

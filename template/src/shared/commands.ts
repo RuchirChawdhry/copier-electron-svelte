@@ -44,7 +44,7 @@ export const COMMANDS = [
   {
     id: 'theme.toggle',
     title: 'Switch theme',
-    description: 'Toggle light and dark appearance',
+    description: 'Cycle dark, light and Solarized appearance',
     shortcut: '',
     icon: 'sun-moon',
   },

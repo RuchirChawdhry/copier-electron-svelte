@@ -39,6 +39,10 @@ test('workspace tabs, command search and pinned actions work', async () => {
     await page.goto(pathToFileURL(resolve('out/renderer/index.html')).toString());
 
     await expect(page.getByRole('tab', { name: 'Workspace' })).toBeVisible();
+    await expect(page.locator('.titlebar > .command-search + .pinned-actions')).toBeVisible();
+    await expect(
+      page.locator('.pinned-actions').getByRole('button', { name: 'New workspace tab' }),
+    ).toBeVisible();
     await page.getByRole('button', { name: 'New tab', exact: true }).click();
     await expect(page.getByRole('tab', { name: 'Workspace' })).toHaveCount(2);
 
@@ -66,6 +70,11 @@ test('workspace tabs, command search and pinned actions work', async () => {
       'background-color',
       'rgb(7, 54, 66)',
     );
+    const scrollbar = await page.locator('.workspace-main').evaluate((element) => ({
+      width: getComputedStyle(element, '::-webkit-scrollbar').width,
+      thumb: getComputedStyle(element, '::-webkit-scrollbar-thumb').backgroundColor,
+    }));
+    expect(scrollbar).toEqual({ width: '11px', thumb: 'rgb(131, 148, 150)' });
 
     const action = page.locator('.settings-action').filter({ hasText: 'Switch theme' });
     await action.getByRole('button', { name: 'Pin' }).click();

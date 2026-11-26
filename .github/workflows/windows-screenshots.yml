@@ -57,7 +57,7 @@ jobs:
       - name: Replace tracked screenshots
         shell: pwsh
         run: |
-          $destination = 'assets/screenshots'
+          $destination = 'screenshots'
           New-Item -ItemType Directory -Path $destination -Force | Out-Null
           Get-ChildItem -Path $destination -Filter '*.png' -File | Remove-Item -Force
           Copy-Item -Path '.ci-generated/screenshots/*.png' -Destination $destination -Force
@@ -65,8 +65,13 @@ jobs:
       - name: Commit updated screenshots
         shell: pwsh
         run: |
-          git add -A -- assets/screenshots
-          $changed = @(git diff --cached --name-only -- assets/screenshots)
+          git add -A -- screenshots
+          $legacy = @(git ls-files -- 'assets/screenshots/*.png')
+          if ($legacy.Count -gt 0) {
+            git rm -- $legacy
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          $changed = @(git diff --cached --name-only -- screenshots assets/screenshots)
           if ($changed.Count -eq 0) {
             Write-Host 'Screenshots have not changed.'
             exit 0
@@ -82,6 +87,6 @@ jobs:
         with:
           name: windows-ui-screenshots
           path: |
-            assets/screenshots/
+            screenshots/
             .ci-generated/test-results/
           if-no-files-found: warn

@@ -1,6 +1,6 @@
 # Workspace and Tabs
 
-The window uses one continuous title bar: application mark, tabs, New Tab, draggable empty area, pinned actions, command search and native window controls.
+The window uses one continuous title bar: application mark, tabs, New Tab, draggable empty area, command search, pinned actions and native window controls. The search bar sits immediately to the left of the right-hand `+` action by default.
 
 ## Tabs
 

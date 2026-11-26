@@ -25,7 +25,7 @@ The **template repository** keeps its documentation publishing workflows separat
 
 ### Version-controlled screenshots
 
-After the visual test passes, the manual workflow replaces the PNGs in **`assets/screenshots/`** and commits them to the branch it ran on. Filenames remain stable (`01-workspace-dark.png` through `07-about-solarized.png`); existing PNGs in that managed directory are removed before copying the new set, so obsolete images do not accumulate. If the files are unchanged, no commit is created. The workflow also uploads `windows-ui-screenshots` as a downloadable run artifact.
+After the visual test passes, the manual workflow replaces the PNGs in the repository's root **`screenshots/`** directory and commits them to the branch it ran on. Filenames remain stable (`01-workspace-dark.png` through `07-about-solarized.png`); existing PNGs in that managed directory are removed before copying the new set, so obsolete images do not accumulate. The first run also removes the old `assets/screenshots/*.png` paths. If the files are unchanged, no commit is created. The workflow also uploads `windows-ui-screenshots` as a downloadable run artifact.
 
 The commit step uses the workflow's `GITHUB_TOKEN` with `contents: write`, and simultaneous runs on the same branch are serialized. It never force-pushes. If the repository requires pull requests for the selected branch, the push will fail and you can still download the screenshots from the workflow artifact.
 
