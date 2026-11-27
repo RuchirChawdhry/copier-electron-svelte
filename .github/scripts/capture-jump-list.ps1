@@ -40,6 +40,12 @@ try {
   }
   if (-not $taskbarButton) { throw "Windows taskbar button not found for $appName" }
 
+  # WinApp only injects a taskbar click when the taskbar owns foreground focus.
+  # Win+T focuses the taskbar without closing the packaged app.
+  winapp ui send-keys 'win+t' -a $process.Id --via send-input --allow-system-keys --json
+  if ($LASTEXITCODE -ne 0) { throw 'WinApp could not focus the Windows taskbar' }
+  Start-Sleep -Milliseconds 250
+
   winapp ui click $taskbarButton.selector -w $taskbar --right --json
   if ($LASTEXITCODE -ne 0) { throw 'WinApp could not right-click the app taskbar button' }
 
