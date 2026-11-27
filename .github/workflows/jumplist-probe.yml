@@ -34,3 +34,15 @@ jobs:
           if ($taskbar -eq [IntPtr]::Zero) { throw 'Explorer taskbar unavailable' }
           winapp ui inspect -w $taskbar --interactive --json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Open a real taskbar Jump List through WinApp
+        shell: pwsh
+        run: |
+          Add-Type -Namespace TaskbarProbe -Name Native -MemberDefinition @'
+          [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+          public static extern System.IntPtr FindWindow(string className, string windowName);
+          '@
+          $taskbar = [TaskbarProbe.Native]::FindWindow('Shell_TrayWnd', $null)
+          winapp ui click 'Appid: Microsoft.Windows.Explorer' -w $taskbar --right --json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          winapp ui list-windows --show-hidden --json
