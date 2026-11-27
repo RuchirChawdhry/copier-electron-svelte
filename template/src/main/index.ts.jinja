@@ -1,8 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, shell } from 'electron';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 import { is } from '@electron-toolkit/utils';
-import { COMMANDS, JUMP_LIST_COMMANDS, isCommandId, type CommandId } from '../shared/commands';
+import { JUMP_LIST_COMMANDS, isCommandId, type CommandId } from '../shared/commands';
+import { buildJumpList } from './jump-list';
 import { getSettings, updateSettings } from './settings';
+import type { AppSettings } from '../shared/settings';
 import icon from '../../resources/icon.png?asset';
 
 let mainWindow: BrowserWindow | null = null;
@@ -80,35 +82,16 @@ function createWindow(): void {
 async function installJumpList(): Promise<void> {
   if (process.platform !== 'win32' || !app.isPackaged) return;
 
-  const items = JUMP_LIST_COMMANDS.map((id) => {
-    const command = COMMANDS.find((item) => item.id === id)!;
-    return {
-      type: 'task' as const,
-      program: process.execPath,
-      args: `--command=${id}`,
-      title: command.title,
-      description: command.description,
-      iconPath: process.execPath,
-      iconIndex: 0,
-    };
-  });
-  const { recentFolders } = await getSettings();
-  const folders = recentFolders.map((path) => ({
-    type: 'task' as const,
-    program: process.execPath,
-    args: `--folder64=${Buffer.from(path).toString('base64url')}`,
-    title: basename(path),
-    description: path.slice(0, 260),
-    iconPath: process.execPath,
-    iconIndex: 0,
-  }));
-  const categories: Electron.JumpListCategory[] = [
-    { type: 'tasks', items },
-    ...(folders.length
-      ? [{ type: 'custom' as const, name: 'Recent Workspaces', items: folders }]
-      : []),
-  ];
-  const result = app.setJumpList(categories);
+  const windowsRoot = process.env.SystemRoot ?? 'C:\\Windows';
+  const result = app.setJumpList(
+    buildJumpList({
+      executable: process.execPath,
+      shellIcons: join(windowsRoot, 'System32', 'shell32.dll'),
+      explorer: join(windowsRoot, 'explorer.exe'),
+      settings: await getSettings(),
+      removedItems: app.getJumpListSettings().removedItems,
+    }),
+  );
   if (result !== 'ok') console.warn('Jump List registration:', result);
 }
 
@@ -128,7 +111,11 @@ if (hasLock) {
     void installJumpList();
 
     ipcMain.handle('settings:get', () => getSettings());
-    ipcMain.handle('settings:update', (_event, settings) => updateSettings(settings));
+    ipcMain.handle('settings:update', async (_event, change: Partial<AppSettings>) => {
+      const saved = await updateSettings(change);
+      if (change.pinnedTabs || change.recentFolders) void installJumpList();
+      return saved;
+    });
     ipcMain.on('window:theme', (_event, theme: string) => {
       if (process.platform === 'darwin' || !mainWindow) return;
       const colors: Record<string, { color: string; symbolColor: string }> = {
