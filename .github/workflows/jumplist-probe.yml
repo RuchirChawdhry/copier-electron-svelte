@@ -41,15 +41,17 @@ jobs:
           Add-Type -Namespace TaskbarProbe -Name Native -MemberDefinition @'
           [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
           public static extern System.IntPtr FindWindow(string className, string windowName);
+          [System.Runtime.InteropServices.DllImport("user32.dll")]
+          public static extern System.IntPtr GetForegroundWindow();
           '@
           $taskbar = [TaskbarProbe.Native]::FindWindow('Shell_TrayWnd', $null)
           winapp ui click 'Appid: Microsoft.Windows.Explorer' -w $taskbar --right --json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $foreground = [TaskbarProbe.Native]::GetForegroundWindow()
+          Write-Host "Native foreground HWND after right-click: $foreground"
+          winapp ui inspect -w $foreground --depth 7 --json
+          winapp ui screenshot -w $foreground --capture-screen --output taskbar-popup.png --json
           winapp ui list-windows --show-hidden --json
-          $menuTree = winapp ui inspect -w $taskbar --depth 9 --json | ConvertFrom-Json
-          Write-Host "Taskbar tree after right-click: $($menuTree | ConvertTo-Json -Depth 20 -Compress)"
-          winapp ui screenshot -w $taskbar --output taskbar-wgc.png --json
-          winapp ui screenshot -w $taskbar --capture-screen --output taskbar-screen.png --json
 
       - name: Upload taskbar screenshots
         if: always()
