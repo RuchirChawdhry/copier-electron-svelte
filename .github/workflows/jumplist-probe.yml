@@ -11,7 +11,7 @@ permissions:
 jobs:
   taskbar:
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - name: Install Microsoft WinApp CLI
         uses: microsoft/setup-WinAppCli@9288bd0729bd3f71e2ed1b9eb247dc91470b824e # v0.3
@@ -54,9 +54,45 @@ jobs:
           winapp ui screenshot -w $foreground --capture-screen --output taskbar-popup.png --json
           winapp ui list-windows --show-hidden --json
 
+      - name: Check out template
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+
+      - name: Generate default app
+        run: uvx --from copier==9.19.1 copier copy --defaults --skip-tasks . .ci-generated
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .ci-generated/.node-version
+          package-manager-cache: false
+
+      - name: Install pnpm
+        working-directory: .ci-generated
+        run: |
+          $packageManager = (Get-Content package.json -Raw | ConvertFrom-Json).packageManager
+          npm install --global $packageManager
+
+      - name: Build and package default app
+        working-directory: .ci-generated
+        run: |
+          pnpm install --frozen-lockfile
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pnpm build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pnpm exec electron-builder --win --dir
+
+      - name: Capture packaged app's Jump List
+        shell: pwsh
+        run: ./.github/scripts/capture-jump-list.ps1 -GeneratedAppDir .ci-generated -OutputFile .ci-generated/screenshots/09-windows-jump-list.png
+
       - name: Upload taskbar screenshots
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: taskbar-probe
-          path: taskbar-*.png
+          path: |
+            taskbar-*.png
+            .ci-generated/screenshots/*.png
