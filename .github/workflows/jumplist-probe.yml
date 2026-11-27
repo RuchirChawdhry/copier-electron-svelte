@@ -46,3 +46,14 @@ jobs:
           winapp ui click 'Appid: Microsoft.Windows.Explorer' -w $taskbar --right --json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           winapp ui list-windows --show-hidden --json
+          $menuTree = winapp ui inspect -w $taskbar --depth 9 --json | ConvertFrom-Json
+          Write-Host "Taskbar tree after right-click: $($menuTree | ConvertTo-Json -Depth 20 -Compress)"
+          winapp ui screenshot -w $taskbar --output taskbar-wgc.png --json
+          winapp ui screenshot -w $taskbar --capture-screen --output taskbar-screen.png --json
+
+      - name: Upload taskbar screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: taskbar-probe
+          path: taskbar-*.png
