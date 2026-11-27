@@ -68,6 +68,14 @@ jobs:
         working-directory: .ci-generated
         run: pnpm test:screenshots
 
+      - name: Package Windows app for native Jump List
+        working-directory: .ci-generated
+        run: pnpm exec electron-builder --win --dir
+
+      - name: Capture native Jump List with WinApp
+        shell: pwsh
+        run: ./.github/scripts/capture-jump-list.ps1 -GeneratedAppDir .ci-generated -OutputFile .ci-generated/screenshots/09-windows-jump-list.png
+
       - name: Replace tracked screenshots
         shell: pwsh
         run: |
