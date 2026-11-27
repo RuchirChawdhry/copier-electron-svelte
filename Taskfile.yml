@@ -1,0 +1,11 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Generate the default Copier app and build its unpacked production package.
+    env:
+      CI: 'true'
+    cmds:
+      - uvx --from copier==9.19.1 copier copy --defaults --skip-tasks --overwrite . .local-generated
+      - pnpm --dir .local-generated install --frozen-lockfile
+      - task -d .local-generated build

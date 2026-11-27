@@ -20,7 +20,7 @@ The **template repository** keeps its documentation publishing workflows separat
 
 ## Template repository Windows workflows
 
-- **Windows template tests** (`windows-ci.yml`) runs automatically on pushes to `main` and pull requests that modify the template. It renders a fresh Copier application on `windows-latest`, installs the generated app's pinned Node/pnpm dependencies, then lints, typechecks, runs Vitest, builds Electron, and runs the Playwright desktop integration tests.
+- **Windows template tests** (`windows-ci.yml`) runs automatically on pushes to `main` and pull requests that modify the template. It renders a fresh Copier application on `windows-latest`, installs Node/pnpm and Task, then lints, typechecks, runs Vitest, runs `task build` (which packages and audits the production app), and runs the Playwright desktop integration tests.
 - **Windows UI screenshots (WinApp)** (`windows-screenshots.yml`) is a separate **manual** GitHub Actions workflow. Select it under the repository's **Actions** tab and choose **Run workflow**. It builds a fresh generated app and uses [Microsoft WinApp CLI](https://github.com/microsoft/winappCli) to capture nine states: dark workspace, open workspace context menu, command launcher, pinned tabs, dark/light/Solarized Settings, About, and the Windows Jump List. The Playwright test opens the right-click menu before asking WinApp to capture the window. WinApp directly captures the window using Windows Graphics Capture (`--focus`, with `--capture-screen` as a fallback). The test then trims its transparent DWM shadow and composites rounded corners into an opaque PNG, so the committed assets have no transparent padding. The Jump List capture additionally packages the app, right-clicks its Windows taskbar button with WinApp, verifies its native tasks, and uses WinApp's `--capture-screen` mode on the popup owned by `ShellExperienceHost`.
 
 ### Version-controlled screenshots
@@ -36,9 +36,9 @@ The screenshot workflow requires Windows graphical capture support. GitHub-hoste
 Use the generated scripts:
 
 ```bash
-pnpm build:win
-pnpm build:linux
-pnpm build:mac
+task build:win
+task build:linux
+task build:mac
 ```
 
 Electron Builder configurations include Windows NSIS and MSI, Linux AppImage and DEB, and macOS DMG and ZIP. Build and smoke-test native packages on the target OS. Windows Jump Lists require a packaged Windows app; a Linux unit test does not validate the taskbar integration.

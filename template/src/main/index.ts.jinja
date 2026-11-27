@@ -56,6 +56,7 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      devTools: !app.isPackaged,
     },
   });
   mainWindow = window;
@@ -142,7 +143,17 @@ if (hasLock) {
         { role: 'appMenu' },
         { role: 'fileMenu' },
         { role: 'editMenu' },
-        { role: 'viewMenu' },
+        {
+          label: 'View',
+          submenu: [
+            { role: 'resetZoom' },
+            { role: 'zoomIn' },
+            { role: 'zoomOut' },
+            { type: 'separator' },
+            { role: 'togglefullscreen' },
+            ...(!app.isPackaged ? [{ role: 'toggleDevTools' as const }] : []),
+          ],
+        },
         { role: 'windowMenu' },
       ]),
     );

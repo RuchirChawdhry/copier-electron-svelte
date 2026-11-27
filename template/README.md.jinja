@@ -6,7 +6,7 @@ A desktop-first workspace application built with Electron, Svelte 5, TypeScript 
 
 ## Development
 
-Requires Node.js 24 and pnpm 11.
+Requires Node.js 24, pnpm 11 and [Task](https://taskfile.dev/docs/installation).
 
 ```bash
 pnpm install
@@ -20,7 +20,7 @@ pnpm format
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm build
+task build
 ```
 
 ## Built-in shell
@@ -38,13 +38,17 @@ To add a command, edit `src/shared/commands.ts` and its handler in `src/renderer
 
 ## Packaging
 
+`task build` creates a production bundle and an unpacked application for the current OS in `dist/`. The other Task commands create distributable installers:
+
 ```bash
-pnpm build:win
-pnpm build:linux
-pnpm build:mac
+task build:win
+task build:linux
+task build:mac
 ```
 
 Windows packaging includes NSIS and MSI. Linux includes AppImage and DEB. macOS includes DMG and ZIP. Native packaging and code signing should be tested on each target OS.
+
+Production windows disable Chromium DevTools, remove the DevTools menu action, and package only compiled application files and runtime dependencies. Electron Builder also disables Node debugging flags through binary fuses. Each packaging task audits the generated `app.asar` to ensure development files are absent. **Electron's built-in Chromium DevTools code is still part of the upstream Electron binary**; physically stripping it would require maintaining a custom Electron build.
 
 The generated GitHub Actions workflow uses the shared Node CI workflow from `RuchirChawdhry/ci-workflows`. Running `pnpm test:e2e` requires a graphical session for Electron tests; the browser-only renderer test also requires an installed Playwright Chromium browser or `CHROMIUM_BIN`.
 

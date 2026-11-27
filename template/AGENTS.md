@@ -26,7 +26,7 @@ This application uses Electron, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn
 - Use Svelte 5 runes and TypeScript. Prefer direct, readable functions and early returns.
 - Reuse shadcn-svelte components before building another UI primitive.
 - Use Tailwind and theme tokens for application appearance; retain the draggable title-bar CSS regions.
-- Use `pnpm format`, `pnpm lint`, `pnpm typecheck`, and `pnpm test` before submitting changes.
+- Use `pnpm format`, `pnpm lint`, `pnpm typecheck`, and `pnpm test` before submitting changes. Use `task build` for production builds; it also inspects the packaged `app.asar` for development files.
 - Test actual user interactions. The Playwright suite covers tabs, command search and title-bar action pins.
 - On Windows with Microsoft WinApp CLI installed, `pnpm test:screenshots` captures every built-in view and theme into `screenshots/`. Use the manually dispatched repository workflow for reproducible screenshots.
 - Do not add boilerplate pages, unused services, empty abstraction layers, or fake controls.

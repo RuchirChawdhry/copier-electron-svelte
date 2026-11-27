@@ -7,7 +7,7 @@ A single typed command registry connects the in-app launcher, keyboard shortcuts
 1. Add a command metadata entry in `src/shared/commands.ts`. Provide its ID, title, description, icon and category.
 2. Handle the new ID in the `run()` switch in `src/renderer/src/App.svelte`.
 3. Add a shortcut if appropriate in `handleKeydown()`; keep platform conventions consistent.
-4. Run `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build`.
+4. Run `pnpm typecheck`, `pnpm lint`, `pnpm test` and `task build`.
 
 Commands become searchable and pinnable automatically. Do not add raw IPC method names or arbitrary shell commands to the renderer registry.
 

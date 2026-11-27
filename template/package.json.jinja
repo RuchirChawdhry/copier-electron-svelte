@@ -21,18 +21,20 @@
     "test:screenshots": "playwright test --config=playwright.screenshots.config.ts",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "build": "pnpm typecheck && pnpm build:bundle",
+    "build": "task bundle",
     "build:bundle": "electron-vite build",
+    "verify:package": "node scripts/verify-package.mjs",
     "postinstall": "install-electron && electron-builder install-app-deps",
-    "build:unpack": "pnpm build && electron-builder --dir",
-    "build:win": "pnpm build && electron-builder --win nsis msi",
-    "build:mac": "pnpm build && electron-builder --mac dmg zip",
-    "build:linux": "pnpm build && electron-builder --linux AppImage deb"
+    "build:unpack": "task build",
+    "build:win": "task build:win",
+    "build:mac": "task build:mac",
+    "build:linux": "task build:linux"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0"
   },
   "devDependencies": {
+    "@electron/asar": "^3.4.1",
     "@electron-toolkit/eslint-config-prettier": "^3.0.1",
     "@electron-toolkit/eslint-config-ts": "^4.0.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
