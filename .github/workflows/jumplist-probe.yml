@@ -13,6 +13,11 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
+      - name: Install Microsoft WinApp CLI
+        uses: microsoft/setup-WinAppCli@9288bd0729bd3f71e2ed1b9eb247dc91470b824e # v0.3
+        with:
+          version: v0.8.0
+
       - name: Inspect runner desktop and Explorer taskbar
         shell: pwsh
         run: |
@@ -26,3 +31,6 @@ jobs:
           Write-Host "Runner session: $runnerSession"
           Write-Host "Explorer processes: $($explorer | ConvertTo-Json -Compress)"
           Write-Host "Taskbar HWND in this session: $taskbar"
+          if ($taskbar -eq [IntPtr]::Zero) { throw 'Explorer taskbar unavailable' }
+          winapp ui inspect -w $taskbar --interactive --json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
