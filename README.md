@@ -8,7 +8,7 @@ Generated applications include:
 - Browser-style pinned tabs (up to 3) restored on launch; Ctrl/Cmd+1–9 tab switching.
 - A searchable command launcher in the title bar (`Ctrl+K` or `Cmd+K`).
 - Pinnable title-bar action buttons, with persisted preferences.
-- Windows Jump List tasks and recent workspaces.
+- Windows Jump Lists with native system icons, action shortcuts, pinned workspaces and recent folders.
 - A collapsible workspace sidebar, settings, dark/light/Solarized Dark themes and status bar.
 - A narrowly scoped, typed Electron preload API with context isolation and sandboxing.
 - TypeScript, ESLint, Oxlint, Prettier, Vitest, Playwright and Lefthook.

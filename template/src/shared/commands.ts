@@ -63,7 +63,9 @@ export type IconName = (typeof COMMANDS)[number]['icon'];
 export const JUMP_LIST_COMMANDS = [
   'tab.new',
   'folder.open',
+  'palette.open',
   'settings.open',
+  'about.open',
 ] as const satisfies readonly CommandId[];
 
 export function isCommandId(value: string): value is CommandId {

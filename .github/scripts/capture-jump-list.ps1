@@ -16,6 +16,25 @@ if (-not $appId -or -not $appName) { throw 'Cannot read the packaged app identit
 $exe = Join-Path $appDir "dist/win-unpacked/$($package.name).exe"
 if (-not (Test-Path $exe -PathType Leaf)) { throw "Packaged Windows executable missing: $exe" }
 
+# The CI capture demonstrates both dynamic sections without making sample
+# workspaces part of the Copier template's real default settings.
+if ($env:GITHUB_ACTIONS -eq 'true') {
+  $previewRoot = Join-Path $env:RUNNER_TEMP 'jump-list-preview'
+  $folders = @('Desktop App', 'Design System', 'Documentation', 'Example Project') |
+    ForEach-Object { Join-Path $previewRoot $_ }
+  $folders | ForEach-Object { New-Item -ItemType Directory -Path $_ -Force | Out-Null }
+  $settingsPath = Join-Path $env:APPDATA "$($package.name)/app/settings.json"
+  if (Test-Path $settingsPath) { throw "Preview would overwrite existing settings: $settingsPath" }
+  New-Item -ItemType Directory -Path (Split-Path $settingsPath) -Force | Out-Null
+  @{
+    pinnedTabs = @(
+      @{ id = 'preview-desktop'; title = 'Desktop App'; kind = 'workspace'; folder = $folders[0] },
+      @{ id = 'preview-design'; title = 'Design System'; kind = 'workspace'; folder = $folders[1] }
+    )
+    recentFolders = $folders
+  } | ConvertTo-Json -Depth 5 | Set-Content -Path $settingsPath -Encoding utf8
+}
+
 Add-Type -Namespace JumpListCapture -Name Native -MemberDefinition @'
 [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
 public static extern System.IntPtr FindWindow(string className, string windowName);
@@ -63,9 +82,16 @@ try {
   }
 
   $menuText = $menu | ConvertTo-Json -Depth 30
-  foreach ($task in @('New workspace tab', 'Open folder', 'Open settings')) {
+  foreach ($task in @('New workspace tab', 'Open folder', 'Open command launcher', 'Open settings', 'About this application')) {
     if ($menuText -notmatch [regex]::Escape($task)) {
       throw "The Jump List does not contain the expected task: $task"
+    }
+  }
+  if ($env:GITHUB_ACTIONS -eq 'true') {
+    foreach ($section in @('Pinned Workspaces', 'Recent Workspaces', 'Design System', 'Documentation')) {
+      if ($menuText -notmatch [regex]::Escape($section)) {
+        throw "The Jump List does not contain the expected section or folder: $section"
+      }
     }
   }
 
@@ -79,4 +105,5 @@ try {
   Write-Host "Captured $($screenshot.width)x$($screenshot.height) Jump List: $outputPath"
 } finally {
   Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+  if ($env:GITHUB_ACTIONS -eq 'true') { Remove-Item -Path $settingsPath -ErrorAction SilentlyContinue }
 }
