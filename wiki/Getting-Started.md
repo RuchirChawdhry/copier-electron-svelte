@@ -26,15 +26,15 @@ pnpm install
 
 ## Daily workflow
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Launch Electron and Vite in development mode |
-| `pnpm format` | Format project source |
-| `pnpm lint` | Run Oxlint and ESLint |
-| `pnpm typecheck` | Check Electron TypeScript and Svelte |
-| `pnpm test` | Run Vitest unit tests |
-| `pnpm build` | Produce production Electron bundles |
-| `pnpm test:e2e` | Run Playwright UI tests (graphical session required) |
+| Command          | Purpose                                                |
+| ---------------- | ------------------------------------------------------ |
+| `pnpm dev`       | Launch Electron and Vite in development mode           |
+| `pnpm format`    | Format project source                                  |
+| `pnpm lint`      | Run Oxlint and ESLint                                  |
+| `pnpm typecheck` | Check Electron TypeScript and Svelte                   |
+| `pnpm test`      | Run Vitest unit tests                                  |
+| `task build`     | Typecheck, bundle, package and verify a production app |
+| `pnpm test:e2e`  | Run Playwright UI tests (graphical session required)   |
 
 If you skipped trusted tasks, run `pnpm exec lefthook install` after initializing Git to enable the pre-commit hook.
 

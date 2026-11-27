@@ -16,6 +16,9 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0(electron@44.11.6(supports-color@7.2.0))
     devDependencies:
+      '@electron/asar':
+        specifier: ^3.4.1
+        version: 3.4.1
       '@electron-toolkit/eslint-config-prettier':
         specifier: ^3.0.1
         version: 3.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(prettier@3.10.1)

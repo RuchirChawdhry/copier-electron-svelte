@@ -1,0 +1,36 @@
+version: '3'
+
+tasks:
+  bundle:
+    desc: Typecheck and compile production Electron bundles.
+    cmds:
+      - pnpm typecheck
+      - pnpm build:bundle
+
+  build:
+    desc: Build an unpacked, production-ready app for this operating system.
+    cmds:
+      - task: bundle
+      - pnpm exec electron-builder --dir
+      - pnpm verify:package
+
+  build:win:
+    desc: Build Windows NSIS and MSI installers.
+    cmds:
+      - task: bundle
+      - pnpm exec electron-builder --win nsis msi
+      - pnpm verify:package
+
+  build:linux:
+    desc: Build Linux AppImage and DEB packages.
+    cmds:
+      - task: bundle
+      - pnpm exec electron-builder --linux AppImage deb
+      - pnpm verify:package
+
+  build:mac:
+    desc: Build macOS DMG and ZIP packages.
+    cmds:
+      - task: bundle
+      - pnpm exec electron-builder --mac dmg zip
+      - pnpm verify:package

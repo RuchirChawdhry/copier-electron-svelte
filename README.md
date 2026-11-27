@@ -28,7 +28,7 @@ Documentation deployment and wiki synchronization reuse the `wiki-pages.yml` and
 
 ## Generate a project
 
-Install [Copier](https://copier.readthedocs.io/) and Node.js 24 with pnpm 11, then run:
+Install [Copier](https://copier.readthedocs.io/), [Task](https://taskfile.dev/docs/installation) and Node.js 24 with pnpm 11, then run:
 
 ```bash
 copier copy --trust https://github.com/RuchirChawdhry/copier-electron-svelte.git my-app
@@ -48,6 +48,8 @@ You can update generated projects when new template releases are tagged using `c
 
 ## Template verification
 
-Generate a temporary project with Copier, then run `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build` inside it. Desktop E2E tests require a graphical session and a Playwright browser installation.
+Run `task build` at this repository root to generate the default app and create an unpacked production build in `.local-generated/dist/`. The generated app also supports `task build` directly, plus `task build:win`, `task build:linux` and `task build:mac` for installers. Development tools are excluded from `app.asar`; production DevTools and Node inspector entry points are disabled. Chromium's embedded DevTools implementation remains in the standard Electron runtime and would require a custom Electron build to remove physically.
+
+To verify a generated app, run `pnpm lint`, `pnpm test` and `task build` inside it. Desktop E2E tests require a graphical session and a Playwright browser installation.
 
 The repository's [Windows template tests](.github/workflows/windows-ci.yml) workflow automatically validates a freshly generated app on `windows-latest`, including Playwright desktop tests. The separate [Windows UI screenshots (WinApp)](.github/workflows/windows-screenshots.yml) workflow runs only when manually dispatched from GitHub Actions. It captures nine application views, including the open right-click workspace menu and the native Windows taskbar Jump List, directly with Microsoft WinApp CLI, replaces the version-controlled PNGs in root-level [`screenshots/`](screenshots/), and uploads an artifact. See [Quality and CI](wiki/Quality-and-CI.md) for usage and Windows desktop-session requirements.
