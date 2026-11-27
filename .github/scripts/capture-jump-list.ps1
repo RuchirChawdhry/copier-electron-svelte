@@ -21,6 +21,8 @@ Add-Type -Namespace JumpListCapture -Name Native -MemberDefinition @'
 public static extern System.IntPtr FindWindow(string className, string windowName);
 [System.Runtime.InteropServices.DllImport("user32.dll")]
 public static extern System.IntPtr GetForegroundWindow();
+[System.Runtime.InteropServices.DllImport("user32.dll")]
+public static extern void keybd_event(byte virtualKey, byte scan, uint flags, System.UIntPtr extraInfo);
 '@
 
 $process = Start-Process -FilePath $exe -PassThru
@@ -40,10 +42,12 @@ try {
   }
   if (-not $taskbarButton) { throw "Windows taskbar button not found for $appName" }
 
-  # WinApp only injects a taskbar click when the taskbar owns foreground focus.
-  # Win+T focuses the taskbar without closing the packaged app.
-  winapp ui send-keys 'win+t' -a $process.Id --via send-input --allow-system-keys --json
-  if ($LASTEXITCODE -ne 0) { throw 'WinApp could not focus the Windows taskbar' }
+  # WinApp refuses to inject a click into a background window. Use the Windows
+  # Win+T accelerator to transfer focus to the taskbar before its WinApp click.
+  [JumpListCapture.Native]::keybd_event(0x5B, 0, 0, [UIntPtr]::Zero)
+  [JumpListCapture.Native]::keybd_event(0x54, 0, 0, [UIntPtr]::Zero)
+  [JumpListCapture.Native]::keybd_event(0x54, 0, 2, [UIntPtr]::Zero)
+  [JumpListCapture.Native]::keybd_event(0x5B, 0, 2, [UIntPtr]::Zero)
   Start-Sleep -Milliseconds 250
 
   winapp ui click $taskbarButton.selector -w $taskbar --right --json
