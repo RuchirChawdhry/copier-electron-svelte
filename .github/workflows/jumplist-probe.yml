@@ -1,0 +1,28 @@
+name: Windows taskbar capability probe
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/jumplist-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  taskbar:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Inspect runner desktop and Explorer taskbar
+        shell: pwsh
+        run: |
+          Add-Type -Namespace TaskbarProbe -Name Native -MemberDefinition @'
+          [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+          public static extern System.IntPtr FindWindow(string className, string windowName);
+          '@
+          $runnerSession = (Get-Process -Id $PID).SessionId
+          $explorer = @(Get-Process explorer -ErrorAction SilentlyContinue | Select-Object Id, SessionId)
+          $taskbar = [TaskbarProbe.Native]::FindWindow('Shell_TrayWnd', $null)
+          Write-Host "Runner session: $runnerSession"
+          Write-Host "Explorer processes: $($explorer | ConvertTo-Json -Compress)"
+          Write-Host "Taskbar HWND in this session: $taskbar"
